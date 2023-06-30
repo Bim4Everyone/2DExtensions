@@ -3,7 +3,7 @@ title:
   en_us: Disable 3D grids
 
 tooltip:
-  ru: Отключает 3D режим всех оси на текущем виде.
+  ru: Отключает 3D режим для всех осей на текущем виде.
   en_us: Disables 3D grids in current view.
 
 author: dosymep

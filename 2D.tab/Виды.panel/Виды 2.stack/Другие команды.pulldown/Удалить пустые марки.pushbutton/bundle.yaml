@@ -3,7 +3,7 @@ title:
   en_us: Remove empty marks
 
 tooltip:
-  ru: Удаляет все марки со знаком ВОПРОСА "?".
-  en_us: Removes all marks with QUESTION mark "?".
+  ru: Удаляет с активного вида все марки со знаком вопроса "?".
+  en_us: Removes all marks with question mark "?" from active view.
 
 author: dosymep
