@@ -22,11 +22,16 @@ from Autodesk.Revit.DB import *
 import pyevent  # pylint: disable=import-error
 import os.path as op
 from pyrevit import forms
+from pyrevit import script
 from pyrevit import revit
 from pyrevit import EXEC_PARAMS
 from pyrevit.forms import Reactive, reactive
 
 from dosymep_libs.bim4everyone import *
+
+
+doc = __revit__.ActiveUIDocument.Document
+view = doc.ActiveView
 
 
 class MainWindow(forms.WPFWindow):
@@ -36,19 +41,23 @@ class MainWindow(forms.WPFWindow):
         super(MainWindow, self).__init__(self.xaml_source)
 
     def button_ok_click(self, sender, e):
-        self.Close()
+        self.DialogResult = True
 
     def button_cancel_click(self, sender, e):
-        self.Close()
+        self.DialogResult = False
 
 
 class MainWindowViewModel(Reactive):
-    def __init__(self, *args):
+    def __init__(self, legend_name, legend_scale, walls, base_legend, legend_names, *args):
         Reactive.__init__(self, *args)
 
         self.error_text = None
-        self.__legend_name = None
-        self.__legend_scale = "50"
+        self.__legend_name = legend_name
+        self.__legend_scale = legend_scale
+
+        self.__walls = walls
+        self.__base_legend = base_legend
+        self.__legend_names = legend_names
 
         self.__create_legend_command = CreateLegendCommand(self)
 
@@ -75,6 +84,30 @@ class MainWindowViewModel(Reactive):
     @legend_scale.setter
     def legend_scale(self, value):
         self.__legend_scale = value
+
+    @reactive
+    def walls(self):
+        return self.__walls
+
+    @walls.setter
+    def walls(self, value):
+        self.__walls = value
+
+    @reactive
+    def base_legend(self):
+        return self.__base_legend
+
+    @base_legend.setter
+    def base_legend(self, value):
+        self.__base_legend = value
+
+    @reactive
+    def legend_names(self):
+        return self.__legend_names
+
+    @legend_names.setter
+    def legend_names(self, value):
+        self.__legend_names = value
 
     @property
     def create_legend_command(self):
@@ -108,40 +141,34 @@ class CreateLegendCommand(ICommand):
             return False
 
         if not self.__view_model.legend_scale:
-            self.__view_model.error_text = "Заполните масштаб легенды."
+            self.__view_model.error_text = "Заполните масштаб."
             return False
 
         if not self.__is_int(self.__view_model.legend_scale):
-            self.__view_model.error_text = "Масштаб легенды должен быть целым числом."
+            self.__view_model.error_text = "Масштаб должен быть целым числом."
             return False
 
-        if float(self.__view_model.legend_scale) <= 0:
-            self.__view_model.error_text = "Масштаб легенды должен быть неотрицательным числом."
+        if int(self.__view_model.legend_scale) <= 0:
+            self.__view_model.error_text = "Масштаб должен быть неотрицательным числом."
+            return False
+
+        if not View.IsValidViewScale(int(self.__view_model.legend_scale)):
+            self.__view_model.error_text = "Масштаб должен быть в диапазоне от 1 до 24000."
             return False
 
         self.__view_model.error_text = None
         return True
 
     def Execute(self, parameter):
-        doc = __revit__.ActiveUIDocument.Document
-        view = doc.ActiveView
-
-        legends = [x for x in FilteredElementCollector(doc).OfClass(View) if x.ViewType == ViewType.Legend]
-        legends_names = [x.Name for x in legends]
-        legends = [x for x in legends if x.CanViewBeDuplicated(ViewDuplicateOption.Duplicate)]
-        base_legend = legends[0]
-
-        walls = [x for x in
-                 FilteredElementCollector(doc, view.Id).OfClass(Wall).WhereElementIsNotElementType().ToElements()]
-
         scale = 1
+        walls = self.__view_model.walls
         legend_name = self.__view_model.legend_name
         legend_scale = self.__view_model.legend_scale
 
-        if not legend_name:
-            legend_name = "Легенда по виду " + view.Name
+        base_legend = self.__view_model.base_legend
+        legend_names = self.__view_model.legend_names
 
-        while legend_name in legends_names:
+        while legend_name in legend_names:
             legend_name = legend_name + " копия"
 
         transform = Transform.CreateTranslation(XYZ.Zero)
@@ -152,7 +179,7 @@ class CreateLegendCommand(ICommand):
             legend = doc.GetElement(legend_id)
 
             legend.Name = legend_name
-            legend.SetParamValue(BuiltInParameter.VIEW_SCALE_PULLDOWN_METRIC, legend_scale)
+            legend.SetParamValue(BuiltInParameter.VIEW_SCALE_PULLDOWN_METRIC, int(legend_scale))
 
             for wall in walls:
                 if not '(В)' in wall.Name:
@@ -174,9 +201,31 @@ class CreateLegendCommand(ICommand):
 @notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
+    if view.ViewType != ViewType.FloorPlan:
+        forms.alert("Активный вид должен быть планом этажа.", exitscript=True)
+
+    walls = [x for x in
+             FilteredElementCollector(doc, view.Id).OfClass(Wall).WhereElementIsNotElementType().ToElements()]
+    if not walls:
+        forms.alert("На активном виде нет стен.", exitscript=True)
+
+    legends = (x for x in FilteredElementCollector(doc).OfClass(View) if x.ViewType == ViewType.Legend)
+
+    legends_names = (x.Name for x in legends)
+    legends = (x for x in legends if x.CanViewBeDuplicated(ViewDuplicateOption.Duplicate))
+
+    base_legend = next(legends, None)
+    if not base_legend:
+        forms.alert("В модели нет легенды для копирования.", exitscript=True)
+
     main_window = MainWindow()
-    main_window.DataContext = MainWindowViewModel()
-    main_window.show_dialog()
+    main_window.DataContext = (
+        MainWindowViewModel(
+            "Легенда для вида " + view.Name, "50",
+            walls, base_legend, legends_names))
+
+    if not main_window.show_dialog():
+        script.exit()
 
 
 script_execute()
