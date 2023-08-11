@@ -140,6 +140,10 @@ class CreateLegendCommand(ICommand):
             self.__view_model.error_text = "Заполните наименование легенды."
             return False
 
+        if not NamingUtils.IsValidName(self.__view_model.legend_name):
+            self.__view_model.error_text = "Недопустимое наименование легенды."
+            return False
+
         if not self.__view_model.legend_scale:
             self.__view_model.error_text = "Заполните масштаб."
             return False
