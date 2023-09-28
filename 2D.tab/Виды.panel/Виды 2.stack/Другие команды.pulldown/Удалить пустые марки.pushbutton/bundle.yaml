@@ -7,3 +7,6 @@ tooltip:
   en_us: Removes all marks with question mark "?" from active view.
 
 author: dosymep
+
+min_revit_version: 2020
+max_revit_version: 2022

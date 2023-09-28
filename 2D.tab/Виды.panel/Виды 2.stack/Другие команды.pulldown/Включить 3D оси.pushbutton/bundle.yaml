@@ -7,3 +7,6 @@ tooltip:
   en_us: Enables 3D grids in current view.
 
 author: dosymep
+
+min_revit_version: 2020
+max_revit_version: 2022
