@@ -148,6 +148,7 @@ def GroupByParameter(lst, func):
     return res
 
 
+@notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     ##########################################################################
@@ -179,7 +180,7 @@ def script_execute(plugin_logger):
 
     primaryViewPort = port_toalignto.obj
 
-    with revit.Transaction("Выравнивание видов"):
+    with revit.Transaction("BIM: Выравнивание видов"):
         for port in ports_toalign:
             currentViewPort = port.obj
             if alignmentPoint == 'Top':
@@ -255,6 +256,6 @@ def script_execute(plugin_logger):
                 newCenter = currentViewPort.GetBoxCenter().Subtract(delta)
                 currentViewPort.SetBoxCenter(newCenter)
 
-    show_executed_script_notification()
 
 script_execute()
+
