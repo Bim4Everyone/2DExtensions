@@ -28,7 +28,11 @@ import dosymep.Revit
 clr.ImportExtensions(dosymep.Revit)
 clr.ImportExtensions(dosymep.Bim4Everyone)
 
+from pyrevit import script
 from pyrevit import revit
+from pyrevit import EXEC_PARAMS
+
+from dosymep_libs.bim4everyone import *
 
 from dosymep.Bim4Everyone.Templates import ProjectParameters
 from dosymep.Bim4Everyone.SharedParams import SharedParamsConfig
@@ -262,8 +266,8 @@ class ViewSheetDuplicater:
                              list=self.list_shts(),
                              views=views,
                              sheet_albums=sheet_albums)
-        window.ShowDialog()
 
+        window.ShowDialog()
         if hasattr(window, 'response'):
             res = window.response
             self.purpose = res["purpose"]
@@ -271,6 +275,10 @@ class ViewSheetDuplicater:
             self.suffix = res["suffix"]
             self.copyViews = res["copyViews"]
             self.sheet_album = res["sheet_album"]
+
+            if not res["sheets"]:
+                script.exit()
+
             for item in res["sheets"]:
                 sheet = item.obj
                 sheetId = sheet.Id
@@ -280,6 +288,8 @@ class ViewSheetDuplicater:
                 textNotes = self._GetTextNotes(sheetId)
                 scheduleSheets = self._GetScheduleSheets(sheetId)
                 self.Duplicate(sheet, titleType, viewports, details, textNotes, scheduleSheets)
+        else:
+            script.exit()
 
     def list_shts(self):
         sheets = FilteredElementCollector(doc) \
@@ -433,4 +443,10 @@ class ViewSheetDuplicater:
         return scheduleSheets
 
 
-duplicater = ViewSheetDuplicater()
+@notification()
+@log_plugin(EXEC_PARAMS.command_name)
+def script_execute(plugin_logger):
+    ViewSheetDuplicater()
+
+
+script_execute()
