@@ -58,6 +58,7 @@ class CopyUseDestination(DB.IDuplicateTypeNamesHandler):
         return DB.DuplicateTypeAction.UseDestinationTypes
 
 
+@notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     selection = [x for x in revit.get_selection()
@@ -83,14 +84,13 @@ def script_execute(plugin_logger):
     if not response:
         script.exit()
 
-    drafting_view = False
+    drafting_view_type = None
     for v in DB.FilteredElementCollector(revit.doc).OfClass(DB.View):
         if v.ViewType == DB.ViewType.DraftingView:
-            drafting_view = True
-            draftingViewType = v
+            drafting_view_type = v
             poject_drafts.append(v.Name)
 
-    if not drafting_view:
+    if not drafting_view_type:
         forms.alert('В проекте должен быть минимум один чертежный вид.', exitscript=True)
 
     for src_view in selection:
@@ -105,11 +105,11 @@ def script_execute(plugin_logger):
                 element_list.append(el.Id)
 
         if len(element_list) < 1:
-            print('Пропуск {0}. Никаких элементов не найдено.'.format(src_view.Name))
+            forms.alert('В легенде \"{}\" не найдены элементы для преобразования.'.format(src_view.Title))
             continue
 
-        with revit.Transaction('Duplicate Legend as Drafting'):
-            dest_view = revit.doc.GetElement(draftingViewType.Duplicate(DB.ViewDuplicateOption.Duplicate))
+        with revit.Transaction('BIM: Преобразование легенды в чертеж'):
+            dest_view = revit.doc.GetElement(drafting_view_type.Duplicate(DB.ViewDuplicateOption.Duplicate))
 
             options = DB.CopyPasteOptions()
             options.SetDuplicateTypeNamesHandler(CopyUseDestination())
@@ -139,8 +139,6 @@ def script_execute(plugin_logger):
                 purpose = response["purpose"]
                 dest_view.Scale = src_view.Scale
                 dest_view.SetParamValue(ProjectParamsConfig.Instance.ViewGroup, purpose)
-
-    show_executed_script_notification()
 
 
 script_execute()
