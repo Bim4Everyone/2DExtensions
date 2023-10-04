@@ -176,6 +176,7 @@ class PrintSheetsWindow(forms.WPFWindow):
             script.exit()
 
 
+@notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     cursheet = revit.active_view
@@ -208,17 +209,22 @@ def script_execute(plugin_logger):
     view.GroupDescriptions.Add(groupDescription)
     window = PrintSheetsWindow('SelectsLists.xaml', list=view)
     window.ShowDialog()
-    selSheets = ''
+
+    selSheets = None
     if hasattr(window, 'response'):
         sheets = window.response
         selSheets = sheets['sheets']
+        if not selSheets:
+            script.exit()
+    else:
+        script.exit()
 
     # get a list of viewports to be copied, updated
     if selSheets and len(selSheets) > 0:
         for v in selSheets:
             if cursheet.Id == v.Id:
                 selSheets.remove(v)
-        with revit.Transaction('Copy Viewports to Sheets'):
+        with revit.Transaction('BIM: Копирование легенд'):
             for sht in selSheets:
                 existing_vps = [revit.doc.GetElement(x)
                                 for x in sht.GetAllViewports]
