@@ -126,6 +126,7 @@ class SelectLevelFrom(forms.TemplateUserInputWindow):
         self.Close()
 
 
+@notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     open_docs = [d for d in revit.docs if not d.IsLinked]
@@ -162,7 +163,8 @@ def script_execute(plugin_logger):
                 base_legend_view = v
 
         if base_legend_view is None:
-            forms.alert('В проекте "{0}" должна быть минимум одна легенда.'.format(dest_doc.Title), exitscript=True)
+            forms.alert('В проекте "{0}" должна быть минимум одна легенда.'.format(dest_doc.Title))
+            continue
 
         for srcView in selection:
             viewElements = \
@@ -175,10 +177,11 @@ def script_execute(plugin_logger):
                     element_list.append(el.Id)
 
             if len(element_list) < 1:
-                print('Проверка содержимого {0}. Элементы в легенде не найдены.'.format(srcView.Title))
+                forms.alert('В легенде \"{} - {}\" не найдены элементы для копирования.'
+                            .format(dest_doc.Title, srcView.Title))
                 continue
 
-            with revit.Transaction('Copy Legends to this document', doc=dest_doc.doc):
+            with revit.Transaction('BIM: Копирование легенд', doc=dest_doc.doc):
                 dest_view = dest_doc.doc.GetElement(base_legend_view.Duplicate(DB.ViewDuplicateOption.Duplicate))
 
                 options = DB.CopyPasteOptions()
@@ -204,9 +207,6 @@ def script_execute(plugin_logger):
                     dest_view.Name = '{}-{}'.format(srcView.Name, index)
                     legends_project.append(dest_view.Name)
                 dest_view.Scale = srcView.Scale
-
-
-    show_executed_script_notification()
 
 
 script_execute()
