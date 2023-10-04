@@ -19,6 +19,7 @@ class CopyUseDestination(DB.IDuplicateTypeNamesHandler):
         return DB.DuplicateTypeAction.UseDestinationTypes
 
 
+@notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     # get a list of selected drafting views
@@ -49,10 +50,10 @@ def script_execute(plugin_logger):
                 elements_to_copy.append(el.Id)
 
         if len(elements_to_copy) < 1:
-            logger.debug('Пропуск {0}. Никаких копируемых элементов не найдено.'.format(srcView.ViewName))
+            forms.alert('В легенде \"{}\" не найдены элементы для преобразования.'.format(srcView.Title))
             continue
 
-        with revit.Transaction('Duplicate Drafting as Legend'):
+        with revit.Transaction('BIM: Преобразование чертежа в легенду'):
             dest_view = revit.doc.GetElement(base_legend_view.Duplicate(DB.ViewDuplicateOption.Duplicate))
 
             options = DB.CopyPasteOptions()
@@ -80,8 +81,6 @@ def script_execute(plugin_logger):
                 legends_project.append(dest_view.Name)
 
             dest_view.Scale = srcView.Scale
-
-    show_executed_script_notification()
 
 
 script_execute()
