@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from pySpeech.ViewSheets import *
 from pyrevit import forms
+from pyrevit import script
 from pyrevit import EXEC_PARAMS
 
+from pySpeech.ViewSheets import *
 from dosymep_libs.bim4everyone import *
 
+@notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     uiDocument = __revit__.ActiveUIDocument
@@ -17,18 +19,18 @@ def script_execute(plugin_logger):
         title='Автонумерация'
     )
 
+    if not result:
+        script.exit()
 
-    if result:
-        if result.isdigit():
-            if result:
-                order_view = OrderViewSheetModel(DocumentRepository(__revit__), int(result))
+    if not result.isdigit():
+        forms.alert("Было введено не число.", exitscript=True)
 
-                order_view.LoadSelectedViewSheets()
-                order_view.CheckUniquesNames()
+    order_view = OrderViewSheetModel(DocumentRepository(__revit__), int(result))
 
-                order_view.OrderViewSheets()
-        else:
-            print "Было введено не число."
+    order_view.LoadSelectedViewSheets()
+    order_view.CheckUniquesNames()
+
+    order_view.OrderViewSheets()
 
 
 script_execute()
