@@ -113,6 +113,7 @@ def sheet_to_view_transform(sheetcoord):
     return DB.XYZ(newx, newy, 0.0)
 
 
+@notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     selview = selvp = None
@@ -187,7 +188,7 @@ def script_execute(plugin_logger):
     transmatrix.destmin = cropmin
     transmatrix.destmax = cropmax
 
-    with revit.Transaction('Set Crop Region'):
+    with revit.Transaction('BIM: Установка области подрезки'):
         curveloop = []
         for bl in selboundary:
             newlinestart = sheet_to_view_transform(bl.GeometryCurve.GetEndPoint(0))
