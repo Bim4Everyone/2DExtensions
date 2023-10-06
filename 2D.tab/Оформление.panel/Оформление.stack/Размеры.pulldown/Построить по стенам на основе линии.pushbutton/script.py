@@ -270,6 +270,7 @@ def create_dimensions():
                 doc.Delete(selected_line.Id)
 
 
+@notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     create_dimensions()
