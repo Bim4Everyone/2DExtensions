@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import clr
+
 clr.AddReference("dosymep.Revit.dll")
 clr.AddReference("dosymep.Bim4Everyone.dll")
 
 import dosymep.Revit
+
 clr.ImportExtensions(dosymep.Revit)
 clr.ImportExtensions(dosymep.Bim4Everyone)
 
@@ -17,15 +19,13 @@ from dosymep.Bim4Everyone.Templates import ProjectParameters
 from dosymep.Bim4Everyone.ProjectParams import ProjectParamsConfig
 
 from pyrevit import script
+from pyrevit import revit
 from pyrevit import forms
 from pyrevit import EXEC_PARAMS
 
 from dosymep_libs.bim4everyone import *
 
 output = script.get_output()
-output.set_title("dosymep (Обновление номера вида)")
-output.center()
-
 application = __revit__.Application
 document = __revit__.ActiveUIDocument.Document
 
@@ -84,7 +84,7 @@ class Section(object):
     def __eq__(self, other):
         if isinstance(other, Section):
             return self.Sheet.Id == other.Sheet.Id \
-                   and self.DetailNumber == other.DetailNumber
+                and self.DetailNumber == other.DetailNumber
 
         return False
 
@@ -99,7 +99,8 @@ def get_row_section(section):
 
 
 def get_table_data(view_sections):
-    return [ get_row_section(section) for section in view_sections ]
+    return [get_row_section(section) for section in view_sections]
+
 
 def show_error_sections(view_sections):
     error_sections = [section for section in view_sections if not section.ViewNumber]
@@ -133,12 +134,14 @@ def show_alert(title, table_columns, table_data, exit_script=False):
         script.exit()
 
 
+@notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     project_parameters = ProjectParameters.Create(application)
-    project_parameters.SetupRevitParams(document, ProjectParamsConfig.Instance.ViewNumberOnSheet,
-                                        ProjectParamsConfig.Instance.WithFullSheetNumber, ProjectParamsConfig.Instance.WithSheetNumber)
-
+    project_parameters.SetupRevitParams(document,
+                                        ProjectParamsConfig.Instance.ViewNumberOnSheet,
+                                        ProjectParamsConfig.Instance.WithFullSheetNumber,
+                                        ProjectParamsConfig.Instance.WithSheetNumber)
 
     view_sheets = FilteredElementCollector(document).OfClass(ViewSheet).ToElements()
     view_sections = [section for sheet in view_sheets
@@ -147,13 +150,9 @@ def script_execute(plugin_logger):
     show_error_sections(view_sections)
     show_duplicates_sections(view_sections)
 
-    with Transaction(document) as transaction:
-        transaction.Start("Обновление номера вида")
-
+    with revit.Transaction("BIM: Обновление номера вида"):
         for section in view_sections:
             section.UpdateParam()
-
-        transaction.Commit()
 
 
 script_execute()
