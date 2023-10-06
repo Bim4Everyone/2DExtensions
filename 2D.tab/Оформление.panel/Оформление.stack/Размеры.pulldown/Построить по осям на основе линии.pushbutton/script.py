@@ -191,6 +191,7 @@ class CashGrid:
         return res
 
 
+@notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     # wallElements = [doc.GetElement(x) for x in FilteredElementCollector(doc, view.Id).OfClass(Wall).ToElementIds()]
