@@ -176,6 +176,7 @@ def getSheets():
         return sel_sheets
 
 
+@notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     cur_sheet = revit.active_view
