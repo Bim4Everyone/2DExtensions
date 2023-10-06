@@ -391,33 +391,32 @@ class MakePatternWindow(forms.WPFWindow):
 
     def export_pat(self, sender, args):
         if self._export_only:
-            self.Close()
             export_dir = forms.pick_folder()
             if export_dir:
                 self.export_pattern(export_dir)
         elif self.verify_name():
-            self.Hide()
             domain = self.pick_domain()
             export_dir = forms.pick_folder()
             if domain and export_dir:
                 self.create_pattern(domain,
                                     export_only=True,
                                     export_path=export_dir)
-            self.Close()
+
+        self.DialogResult = True
 
     def make_pattern(self, sender, args):
         if self.verify_name():
-            self.Hide()
+            self.DialogResult = True
             domain = self.pick_domain()
             if domain:
                 self.create_pattern(domain)
-            self.Close()
 
 
+@notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
-    MakePatternWindow('MakePatternWindow.xaml',
-                      selection.elements).show(modal=True)
+    if not MakePatternWindow('MakePatternWindow.xaml', selection.elements).ShowDialog():
+        script.exit()
 
 
 script_execute()
