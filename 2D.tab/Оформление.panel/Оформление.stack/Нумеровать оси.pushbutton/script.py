@@ -161,6 +161,7 @@ def flipList(list):
     return result
 
 
+@notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     doc = __revit__.ActiveUIDocument.Document
@@ -318,8 +319,6 @@ def script_execute(plugin_logger):
 
         for idx, grid in enumerate(selections):
             grid.setName(PREFIX + result[idx] + SUFFIX)
-
-    show_executed_script_notification()
 
 
 script_execute()
