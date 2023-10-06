@@ -12,6 +12,7 @@ tooltip:
     2. В открывшемся окне назначьте параметры нумерации и запустите скрипт.
   en_us: Renumbers selected axes.
 
+author: dosymep
 help_url: "https://kb.a101.ru/pages/viewpage.action?pageId=67829998"
 
 min_revit_version: 2020

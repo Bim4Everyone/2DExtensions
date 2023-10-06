@@ -18,6 +18,7 @@ tooltip:
     
     2. Run the script - all walls starting with (H) on the floor plan are converted to lines on the legend.
 
+author: dosymep
 help_url: "https://kb.a101.ru/pages/viewpage.action?pageId=67829996"
 
 min_revit_version: 2020

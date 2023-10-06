@@ -12,6 +12,7 @@ tooltip:
     2. Выделить стены и линию. Запустить скрипт.
   en_us: Walls
 
+author: dosymep
 help_url: "https://kb.a101.ru/pages/viewpage.action?pageId=67829998"
 
 min_revit_version: 2020
