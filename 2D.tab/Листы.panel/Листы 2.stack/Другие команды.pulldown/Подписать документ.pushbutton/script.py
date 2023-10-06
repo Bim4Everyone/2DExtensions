@@ -13,6 +13,7 @@ from System.Diagnostics import Process
 from pyrevit import EXEC_PARAMS
 from dosymep_libs.bim4everyone import *
 
+@notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     Process.Start(r"T:\Проектный институт\Отдел стандартизации BIM и RD\BIM-Ресурсы\3-00_Семейства Общие\Подписи")
