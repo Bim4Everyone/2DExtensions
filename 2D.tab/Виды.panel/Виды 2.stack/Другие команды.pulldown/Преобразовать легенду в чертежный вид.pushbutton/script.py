@@ -105,7 +105,7 @@ def script_execute(plugin_logger):
                 element_list.append(el.Id)
 
         if len(element_list) < 1:
-            forms.alert('В легенде \"{}\" не найдены элементы для преобразования.'.format(src_view.Title))
+            print ('Пропуск легенды \"{}\". В легенде не найдены элементы для преобразования.'.format(src_view.Title))
             continue
 
         with revit.Transaction('BIM: Преобразование легенды в чертеж'):
