@@ -19,7 +19,7 @@
                 <DockPanel DockPanel.Dock="Top" Margin="0,0,0,20">
                     <TextBlock FontSize="14" Margin="0,3,10,0"
 						       DockPanel.Dock="Left">
-						       Назначение вида:
+						       Значение:
                     </TextBlock>
                     <ComboBox x:Name="purpose"
                                   Height="25px"

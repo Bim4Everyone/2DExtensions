@@ -77,7 +77,7 @@ def script_execute(plugin_logger):
             views.append(view_group)
 
     response = SelectLevelFrom.show([],
-                                    title="Выберите назначение вида",
+                                    title=ProjectParamsConfig.Instance.ViewGroup.Name,
                                     button_name="Ок",
                                     views=views)
 
