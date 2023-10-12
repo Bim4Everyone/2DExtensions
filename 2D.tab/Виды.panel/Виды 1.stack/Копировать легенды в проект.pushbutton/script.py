@@ -129,6 +129,8 @@ class SelectLevelFrom(forms.TemplateUserInputWindow):
 @notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
+    output = script.get_output()
+
     open_docs = [d for d in revit.docs if not d.IsLinked]
     open_docs.remove(revit.doc)
     if len(open_docs) < 1:
@@ -163,22 +165,23 @@ def script_execute(plugin_logger):
                 base_legend_view = v
 
         if base_legend_view is None:
-            forms.alert('В проекте "{0}" должна быть минимум одна легенда.'.format(dest_doc.Title))
+            print ('Пропуск проекта "{0}". В проекте должна быть минимум одна легенда.'
+                   .format(dest_doc.Title))
             continue
 
         for srcView in selection:
-            viewElements = \
+            view_elements = \
                 DB.FilteredElementCollector(revit.doc, srcView.Id) \
                     .ToElements()
 
             element_list = []
-            for el in viewElements:
+            for el in view_elements:
                 if isinstance(el, DB.Element) and el.Category:
                     element_list.append(el.Id)
 
             if len(element_list) < 1:
-                forms.alert('В легенде \"{} - {}\" не найдены элементы для копирования.'
-                            .format(dest_doc.Title, srcView.Title))
+                print ('Пропуск легенды \"{} - {}\". В легенде не найдены элементы для копирования.'
+                       .format(dest_doc.Title, srcView.Title))
                 continue
 
             with revit.Transaction('BIM: Копирование легенд', doc=dest_doc.doc):
