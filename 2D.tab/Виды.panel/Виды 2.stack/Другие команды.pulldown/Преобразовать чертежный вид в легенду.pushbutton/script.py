@@ -50,7 +50,7 @@ def script_execute(plugin_logger):
                 elements_to_copy.append(el.Id)
 
         if len(elements_to_copy) < 1:
-            print ('Пропуск легенды \"{}\". В легенде не найдены элементы для преобразования.'
+            print ('Пропуск чертежа \"{}\". В чертеже не найдены элементы для преобразования.'
                    .format(srcView.Title))
             continue
 
