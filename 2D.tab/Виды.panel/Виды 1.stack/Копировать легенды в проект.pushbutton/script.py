@@ -129,8 +129,6 @@ class SelectLevelFrom(forms.TemplateUserInputWindow):
 @notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
-    output = script.get_output()
-
     open_docs = [d for d in revit.docs if not d.IsLinked]
     open_docs.remove(revit.doc)
     if len(open_docs) < 1:
