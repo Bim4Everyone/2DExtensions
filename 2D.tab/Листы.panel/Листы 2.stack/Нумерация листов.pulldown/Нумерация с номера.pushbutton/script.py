@@ -27,10 +27,10 @@ def script_execute(plugin_logger):
 
     order_view = OrderViewSheetModel(DocumentRepository(__revit__), int(result))
 
-    order_view.LoadSelectedViewSheets()
-    order_view.CheckUniquesNames()
+    order_view.load_selected_view_sheets()
+    order_view.check_uniques_names()
 
-    order_view.OrderViewSheets()
+    order_view.order_view_sheets()
 
 
 script_execute()
