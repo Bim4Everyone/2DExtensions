@@ -15,6 +15,7 @@ from Autodesk.Revit.UI.Selection import PickBoxStyle
 from Autodesk.Revit.UI import RevitCommandId, PostableCommand
 
 from pyrevit import revit
+from pyrevit import forms
 from pyrevit import EXEC_PARAMS
 from dosymep_libs.bim4everyone import *
 
@@ -194,67 +195,57 @@ class CashGrid:
 @notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
-    # wallElements = [doc.GetElement(x) for x in FilteredElementCollector(doc, view.Id).OfClass(Wall).ToElementIds()]
-    gridElements = [CashGrid(x) for x in FilteredElementCollector(doc, view.Id).OfClass(Grid).ToElements()]
+    grids = [CashGrid(x) for x in FilteredElementCollector(doc, view.Id).OfClass(Grid).ToElements()]
+    detail_lines = [CashLine(x) for x in revit.get_selection().elements if isinstance(x, DetailLine)]
 
-    selection = uidoc.Selection.GetElementIds()
-    elems = [doc.GetElement(i) for i in selection if isinstance(doc.GetElement(i), DetailLine)]
-    elemIds = List[ElementId]()
+    if not detail_lines:
+        with forms.WarningBar(title="Выберите линии"):
+            detail_lines = revit.pick_elements_by_category(BuiltInCategory.OST_Lines, "Выберите линии")
+            if not detail_lines:
+                forms.alert("Нужно выбрать хотя бы одну линию.", exitscript=True)
+
+            detail_lines = [CashLine(x) for x in detail_lines]
 
     with revit.Transaction("BIM: Оси"):
-        # print elems
-        for elem in elems:
-            # print elem.Id
+        for detail_line in detail_lines:
             references = ReferenceArray()
-            compareFaces = []
-            compareElements = []
-            compareLine = CashLine(elem)
 
-            compareElements = gridElements
+            intersected_girds = []
+            for grid in grids:
+                if grid.isIntersect(detail_line):
+                    intersected_girds.append(grid)
 
-            result = []
+            maximum_ranged_elements = [intersected_girds[0].getReferences(detail_line),
+                                       intersected_girds[0].getReferences(detail_line)]
 
-            for element in compareElements:
-                if element.isIntersect(compareLine):
-                    result.append(element)
+            distance = 0
+            for grid in intersected_girds:
+                for grid2 in intersected_girds:
+                    distance_temp = grid.getRange(grid2)
+                    if distance_temp > distance:
+                        distance = distance_temp
+                        maximum_ranged_elements = [grid.getReferences(detail_line)[0],
+                                                   grid2.getReferences(detail_line)[0]]
 
-            maximumRangedElements = [result[0].getReferences(compareLine), result[0].getReferences(compareLine)]
-            range = 0
-            for element in result:
-                for element2 in result:
-                    rangeTemp = element.getRange(element2)
-                    if rangeTemp > range:
-                        range = rangeTemp
-                        maximumRangedElements = [element.getReferences(compareLine)[0], element2.getReferences(compareLine)[0]]
+            ranged_references = ReferenceArray()
+            ranged_references.Append(maximum_ranged_elements[0])
+            ranged_references.Append(maximum_ranged_elements[1])
 
-            # print range
-            # print maximumRangedElements[0]
-            # print maximumRangedElements[1]
-
-            rangedReferences = ReferenceArray()
-            rangedReferences.Append(maximumRangedElements[0])
-            rangedReferences.Append(maximumRangedElements[1])
-            # resultSelection = List[ElementId]([x.id for x in gridElements])
-            # uidoc.Selection.SetElementIds(resultSelection)
-
-            for element in result:
-                for reference in element.getReferences(compareLine):
+            for grid in intersected_girds:
+                for reference in grid.getReferences(detail_line):
                     references.Append(reference)
 
-            line = Line.CreateBound(compareLine.start, compareLine.end)
+            line = Line.CreateBound(detail_line.start, detail_line.end)
 
-            newStart = XYZ(line.Tessellate()[0].X - 20, line.Tessellate()[0].Y + 20, line.Tessellate()[0].Z)
-            newEnd = XYZ(line.Tessellate()[1].X - 20, line.Tessellate()[1].Y + 20, line.Tessellate()[1].Z)
-            maximumRangedLine = Line.CreateBound(newStart, newEnd)
+            line_tessellated = line.Tessellate()
+            new_start = XYZ(line_tessellated[0].X - 20, line_tessellated[0].Y + 20, line_tessellated[0].Z)
+            new_finish = XYZ(line_tessellated[1].X - 20, line_tessellated[1].Y + 20, line_tessellated[1].Z)
+            maximum_ranged_line = Line.CreateBound(new_start, new_finish)
 
-            try:
-                curve = doc.Create.NewDimension(view, line, references)
-                curve = doc.Create.NewDimension(view, maximumRangedLine, rangedReferences)
-                elemIds.Add(elem.Id)
-            except:
-                pass
+            doc.Create.NewDimension(view, line, references)
+            doc.Create.NewDimension(view, maximum_ranged_line, ranged_references)
 
-        doc.Delete(elemIds)
+            doc.Delete(detail_line.id)
 
 
 script_execute()
