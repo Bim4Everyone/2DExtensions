@@ -15,6 +15,7 @@ from Autodesk.Revit.Creation import ItemFactoryBase
 
 from pyrevit import forms
 from pyrevit import revit
+from pyrevit import script
 from pyrevit import EXEC_PARAMS
 from pyrevit.framework import Controls
 
@@ -165,25 +166,26 @@ def flipList(list):
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     doc = __revit__.ActiveUIDocument.Document
-    uidoc = __revit__.ActiveUIDocument
-    app = __revit__.Application
-    view = __revit__.ActiveUIDocument.ActiveGraphicalView
     view = doc.ActiveView
-    selections = [elId for elId in __revit__.ActiveUIDocument.Selection.GetElementIds() if
-                  isinstance(doc.GetElement(elId), Grid)]
-    grids = [x for x in FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Grids).OfClass(Grid).ToElementIds() if
-             x not in selections]
-    selections = [doc.GetElement(x) for x in selections]
-    grids = [doc.GetElement(x).Name for x in grids]
 
-    if len(selections) == 0:
-        MessageBox.Show('Вы должны выбрать хотя бы одну ось', 'Error!')
-        raise SystemExit(1)
+    selections = [grid for grid in revit.get_selection().elements if isinstance(grid, Grid)]
+    if not selections:
+        with forms.WarningBar(title='Выберите Оси'):
+            selections = revit.pick_elements_by_category(BuiltInCategory.OST_Grids, "Выберите Оси")
+            if not selections:
+                forms.alert("Выберите хотя бы одну ось.", exitscript=True)
+
+    grids = FilteredElementCollector(doc, view.Id).OfClass(Grid).ToElements()
+    grids = [x.Name for x in grids
+             if x.Id not in [y.Id for y in selections]]
+
+
     res = SelectLevelFrom.show([], title='Перенумерация осей', button_name='Ок')
     if not res:
-        raise SystemExit(1)
+        script.exit()
+
     if not res['start']:
-        raise SystemExit(1)
+        script.exit()
 
     PREFIX = res['prefix']
     SUFFIX = res['suffix']
