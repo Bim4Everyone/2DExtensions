@@ -11,6 +11,7 @@ from System.Collections.Generic import *
 from Autodesk.Revit.DB import *
 
 from pyrevit import revit
+from pyrevit import forms
 from pyrevit import EXEC_PARAMS
 from dosymep_libs.bim4everyone import *
 
@@ -33,10 +34,6 @@ filter_categories = List[BuiltInCategory]([BuiltInCategory.OST_Walls,
 elements = FilteredElementCollector(doc, view.Id) \
     .WherePasses(ElementMulticategoryFilter(filter_categories)) \
     .ToElements()
-
-selection = uidoc.Selection.GetElementIds()
-detail_lines = [doc.GetElement(i) for i in selection if isinstance(doc.GetElement(i), DetailLine)]
-
 
 class Utils:
     def __init__(self):
@@ -255,6 +252,13 @@ def get_normal_references(compare_line):
 
 
 def create_dimensions():
+    detail_lines = [x for x in revit.get_selection().elements if isinstance(x, DetailLine)]
+    if not detail_lines:
+        with forms.WarningBar(title="Выберите линии"):
+            detail_lines = revit.pick_elements_by_category(BuiltInCategory.OST_Lines, "Выберите линии")
+            if not detail_lines:
+                forms.alert("Нужно выбрать хотя бы одну линию.", exitscript=True)
+
     with revit.Transaction("BIM: Размеры"):
         for selected_line in detail_lines:
             main_line = CashedDetailLine(selected_line)
