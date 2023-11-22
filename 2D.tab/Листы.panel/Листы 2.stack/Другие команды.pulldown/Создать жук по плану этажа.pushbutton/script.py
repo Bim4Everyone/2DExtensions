@@ -29,10 +29,14 @@ from pyrevit.forms import Reactive, reactive
 
 from dosymep_libs.bim4everyone import *
 
-
 doc = __revit__.ActiveUIDocument.Document
 view = doc.ActiveView
 
+
+class WallExtend():
+    def __init__(self, trans=None, wall=None):
+        self.trans = trans
+        self.wall = wall
 
 class MainWindow(forms.WPFWindow):
     def __init__(self, ):
@@ -58,7 +62,6 @@ class MainWindowViewModel(Reactive):
         self.__walls = walls
         self.__base_legend = base_legend
         self.__legend_names = legend_names
-
         self.__create_legend_command = CreateLegendCommand(self)
 
     @reactive
@@ -119,7 +122,6 @@ class CreateLegendCommand(ICommand):
 
     def __init__(self, view_model, *args):
         ICommand.__init__(self, *args)
-
         self.__view_model = view_model
         self.__view_model.PropertyChanged += self.ViewModel_PropertyChanged
 
@@ -168,7 +170,6 @@ class CreateLegendCommand(ICommand):
         walls = self.__view_model.walls
         legend_name = self.__view_model.legend_name
         legend_scale = self.__view_model.legend_scale
-
         base_legend = self.__view_model.base_legend
         legend_names = self.__view_model.legend_names
 
@@ -181,15 +182,15 @@ class CreateLegendCommand(ICommand):
         with revit.Transaction("BIM: Создание жука по плану этажа"):
             legend_id = base_legend.Duplicate(ViewDuplicateOption.Duplicate)
             legend = doc.GetElement(legend_id)
-
             legend.Name = legend_name
             legend.SetParamValue(BuiltInParameter.VIEW_SCALE_PULLDOWN_METRIC, int(legend_scale))
-
             for wall in walls:
-                if not '(В)' in wall.Name:
-                    curve = wall.Location.Curve
-                    scaled_curve = curve.CreateTransformed(transform)
-
+                if '(В)' not in wall.wall.Name:
+                    curve = wall.wall.Location.Curve
+                    if wall.trans:
+                        scaled_curve = curve.CreateTransformed(transform.Multiply(wall.trans))
+                    else:
+                        scaled_curve = curve.CreateTransformed(transform)
                     if scaled_curve:
                         doc.Create.NewDetailCurve(legend, scaled_curve)
 
@@ -208,16 +209,13 @@ def script_execute(plugin_logger):
     if view.ViewType != ViewType.FloorPlan:
         forms.alert("Активный вид должен быть планом этажа.", exitscript=True)
 
-    walls = [x for x in
-             FilteredElementCollector(doc, view.Id).OfClass(Wall).WhereElementIsNotElementType().ToElements()]
+    walls = Mcontext.GetElementList()
     if not walls:
         forms.alert("На активном виде нет стен.", exitscript=True)
 
     legends = (x for x in FilteredElementCollector(doc).OfClass(View) if x.ViewType == ViewType.Legend)
-
     legends_names = (x.Name for x in legends)
     legends = (x for x in legends if x.CanViewBeDuplicated(ViewDuplicateOption.Duplicate))
-
     base_legend = next(legends, None)
     if not base_legend:
         forms.alert("В модели нет легенды для копирования.", exitscript=True)
@@ -231,5 +229,110 @@ def script_execute(plugin_logger):
     if not main_window.show_dialog():
         script.exit()
 
+
+class MyExportContext2D(IExportContext2D):
+    def __init__(self, document, *args):
+        self.__document = document
+        self.__wallsList = []
+
+    def OnCurve(self, node):
+        return RenderNodeAction.Skip
+
+    def OnElementBegin(self, element_id):
+        return RenderNodeAction.Skip
+
+    def OnElementEnd(self, element_id):
+        pass
+
+    def OnFaceBegin(self, node):
+        return RenderNodeAction.Skip
+
+    def OnFaceEnd(self, node):
+        pass
+
+    def OnInstanceBegin(self, node):
+        return RenderNodeAction.Skip
+
+    def OnInstanceEnd(self, node):
+        pass
+
+    def OnLinkBegin(self, node):
+        return RenderNodeAction.Proceed
+
+    def OnLinkEnd(self, node):
+        pass
+
+    def OnLight(self, node):
+        pass
+
+    def OnMaterial(self, node):
+        pass
+
+    def OnPolymesh(self, node):
+        pass
+
+    def OnRPC(self, node):
+        pass
+
+    def OnElementBegin2D(self, node):
+        collector = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_RvtLinks)
+        elem = node.Document.GetElement(node.ElementId)
+        if elem.InAnyCategory(BuiltInCategory.OST_Walls):
+            added = False
+            for i in collector:
+                if i.Id == node.LinkInstanceId:
+                    self.__wallsList.append(WallExtend(trans=i.GetTotalTransform(), wall=elem))
+                    added = True
+            if not added:
+                self.__wallsList.append(WallExtend(wall=elem))
+
+            return RenderNodeAction.Proceed
+        return RenderNodeAction.Skip
+
+    def GetElementList(self):
+        return self.__wallsList
+
+    def OnElementEnd2D(self, node):
+        return None
+
+    def OnFaceEdge2D(self, node):
+        return RenderNodeAction.Skip
+
+    def OnFaceSilhouette2D(self, node):
+        return RenderNodeAction.Skip
+
+    def OnLineSegment(self, segment):
+        return None
+
+    def OnPolyline(self, node):
+        return RenderNodeAction.Skip
+
+    def OnPolylineSegments(self, segments):
+        return None
+
+    def OnText(self):
+        return None
+
+    def Finish(self):
+        pass
+
+    def Start(self):
+        return True
+
+    def IsCanceled(self):
+        return False
+
+    def OnViewBegin(self, node):
+        return RenderNodeAction.Proceed
+
+    def OnViewEnd(self, element_id):
+        pass
+
+
+Mcontext = MyExportContext2D(doc)
+
+exporter = CustomExporter(doc, Mcontext)
+
+exporter.Export(view)
 
 script_execute()
