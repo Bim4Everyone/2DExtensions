@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import clr
+
 clr.AddReference('System')
 clr.AddReference("System.Windows.Forms")
 
@@ -12,6 +13,7 @@ clr.AddReference("dosymep.Revit.dll")
 clr.AddReference("dosymep.Bim4Everyone.dll")
 
 import dosymep
+
 clr.ImportExtensions(dosymep.Revit)
 clr.ImportExtensions(dosymep.Bim4Everyone)
 
@@ -33,10 +35,19 @@ doc = __revit__.ActiveUIDocument.Document
 view = doc.ActiveView
 
 
-class WallExtend():
-    def __init__(self, trans=None, wall=None):
-        self.trans = trans
+class ElementWall:
+    def __init__(self, wall=None, trans=None):
         self.wall = wall
+        self.trans = trans
+
+    def __eq__(self, other):
+        return (self.wall.Id == other.wall.Id
+                and self.trans.Origin.IsAlmostEqualTo(other.trans.Origin))
+
+    def __hash__(self):
+        # Нужно не точное сравнение для XYZ
+        return 0  # hash((self.wall.Id, self.trans.Origin))
+
 
 class MainWindow(forms.WPFWindow):
     def __init__(self, ):
@@ -179,6 +190,7 @@ class CreateLegendCommand(ICommand):
         transform = Transform.CreateTranslation(XYZ.Zero)
         transform = transform.ScaleBasis(scale)
 
+        legend = view
         with revit.Transaction("BIM: Создание жука по плану этажа"):
             legend_id = base_legend.Duplicate(ViewDuplicateOption.Duplicate)
             legend = doc.GetElement(legend_id)
@@ -187,12 +199,12 @@ class CreateLegendCommand(ICommand):
             for wall in walls:
                 if '(В)' not in wall.wall.Name:
                     curve = wall.wall.Location.Curve
-                    if wall.trans:
-                        scaled_curve = curve.CreateTransformed(transform.Multiply(wall.trans))
-                    else:
-                        scaled_curve = curve.CreateTransformed(transform)
-                    if scaled_curve:
-                        doc.Create.NewDetailCurve(legend, scaled_curve)
+                    scaled_curve = curve.CreateTransformed(transform.Multiply(wall.trans))
+                    doc.Create.NewDetailCurve(legend, scaled_curve)
+
+
+        UIDocument(doc).ActiveView = legend
+
 
     @staticmethod
     def __is_int(value):
@@ -203,13 +215,148 @@ class CreateLegendCommand(ICommand):
             return False
 
 
+class ExportWall2D(IExportContext2D):
+    def __init__(self, document, link_instances):
+        self.__document = document
+        self.__walls_list = set()
+        self.__link_instances = link_instances
+
+    def OnElementBegin2D(self, node):
+        element = node.Document.GetElement(node.ElementId)
+        if not element.InAnyCategory(BuiltInCategory.OST_Walls):
+            return RenderNodeAction.Skip
+
+        if node.LinkInstanceId.IsNull():
+            self.__walls_list.add(ElementWall(wall=element, trans=Transform.Identity))
+            return RenderNodeAction.Proceed
+
+        link_instance = next((link_instance for link_instance in self.__link_instances
+                              if link_instance.Id == node.LinkInstanceId))
+
+        transform = link_instance.GetTotalTransform() if link_instance else Transform.Identity
+        self.__walls_list.add(ElementWall(wall=element, trans=transform))
+
+        return RenderNodeAction.Proceed
+
+    def get_element_list(self):
+        return self.__walls_list
+
+
+    def OnCurve(self, node):
+        return RenderNodeAction.Skip
+
+
+    def OnElementBegin(self, element_id):
+        return RenderNodeAction.Skip
+
+
+    def OnElementEnd(self, element_id):
+        pass
+
+
+    def OnFaceBegin(self, node):
+        return RenderNodeAction.Skip
+
+
+    def OnFaceEnd(self, node):
+        pass
+
+
+    def OnInstanceBegin(self, node):
+        return RenderNodeAction.Skip
+
+
+    def OnInstanceEnd(self, node):
+        pass
+
+
+    def OnLinkBegin(self, node):
+        return RenderNodeAction.Proceed
+
+
+    def OnLinkEnd(self, node):
+        pass
+
+
+    def OnLight(self, node):
+        pass
+
+
+    def OnMaterial(self, node):
+        pass
+
+
+    def OnPolymesh(self, node):
+        pass
+
+
+    def OnRPC(self, node):
+        pass
+
+
+    def OnElementEnd2D(self, node):
+        return None
+
+
+    def OnFaceEdge2D(self, node):
+        return RenderNodeAction.Skip
+
+
+    def OnFaceSilhouette2D(self, node):
+        return RenderNodeAction.Skip
+
+
+    def OnLineSegment(self, segment):
+        return None
+
+
+    def OnPolyline(self, node):
+        return RenderNodeAction.Skip
+
+
+    def OnPolylineSegments(self, segments):
+        return None
+
+
+    def OnText(self):
+        return None
+
+
+    def Finish(self):
+        pass
+
+
+    def Start(self):
+        return True
+
+
+    def IsCanceled(self):
+        return False
+
+
+    def OnViewBegin(self, node):
+        return RenderNodeAction.Proceed
+
+
+    def OnViewEnd(self, element_id):
+        pass
+
+
 @notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     if view.ViewType != ViewType.FloorPlan:
         forms.alert("Активный вид должен быть планом этажа.", exitscript=True)
 
-    walls = Mcontext.GetElementList()
+    link_instances = list(FilteredElementCollector(doc)
+                          .OfCategory(BuiltInCategory.OST_RvtLinks)
+                          .ToElements())
+
+    export_wall = ExportWall2D(doc, link_instances)
+    exporter = CustomExporter(doc, export_wall)
+    exporter.Export(view)
+
+    walls = export_wall.get_element_list()
     if not walls:
         forms.alert("На активном виде нет стен.", exitscript=True)
 
@@ -229,110 +376,5 @@ def script_execute(plugin_logger):
     if not main_window.show_dialog():
         script.exit()
 
-
-class MyExportContext2D(IExportContext2D):
-    def __init__(self, document, *args):
-        self.__document = document
-        self.__wallsList = []
-
-    def OnCurve(self, node):
-        return RenderNodeAction.Skip
-
-    def OnElementBegin(self, element_id):
-        return RenderNodeAction.Skip
-
-    def OnElementEnd(self, element_id):
-        pass
-
-    def OnFaceBegin(self, node):
-        return RenderNodeAction.Skip
-
-    def OnFaceEnd(self, node):
-        pass
-
-    def OnInstanceBegin(self, node):
-        return RenderNodeAction.Skip
-
-    def OnInstanceEnd(self, node):
-        pass
-
-    def OnLinkBegin(self, node):
-        return RenderNodeAction.Proceed
-
-    def OnLinkEnd(self, node):
-        pass
-
-    def OnLight(self, node):
-        pass
-
-    def OnMaterial(self, node):
-        pass
-
-    def OnPolymesh(self, node):
-        pass
-
-    def OnRPC(self, node):
-        pass
-
-    def OnElementBegin2D(self, node):
-        collector = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_RvtLinks)
-        elem = node.Document.GetElement(node.ElementId)
-        if elem.InAnyCategory(BuiltInCategory.OST_Walls):
-            added = False
-            for i in collector:
-                if i.Id == node.LinkInstanceId:
-                    self.__wallsList.append(WallExtend(trans=i.GetTotalTransform(), wall=elem))
-                    added = True
-            if not added:
-                self.__wallsList.append(WallExtend(wall=elem))
-
-            return RenderNodeAction.Proceed
-        return RenderNodeAction.Skip
-
-    def GetElementList(self):
-        return self.__wallsList
-
-    def OnElementEnd2D(self, node):
-        return None
-
-    def OnFaceEdge2D(self, node):
-        return RenderNodeAction.Skip
-
-    def OnFaceSilhouette2D(self, node):
-        return RenderNodeAction.Skip
-
-    def OnLineSegment(self, segment):
-        return None
-
-    def OnPolyline(self, node):
-        return RenderNodeAction.Skip
-
-    def OnPolylineSegments(self, segments):
-        return None
-
-    def OnText(self):
-        return None
-
-    def Finish(self):
-        pass
-
-    def Start(self):
-        return True
-
-    def IsCanceled(self):
-        return False
-
-    def OnViewBegin(self, node):
-        return RenderNodeAction.Proceed
-
-    def OnViewEnd(self, element_id):
-        pass
-
-
-Mcontext = MyExportContext2D(doc)
-
-exporter = CustomExporter(doc, Mcontext)
-
-exporter.Export(view)
 
 script_execute()
