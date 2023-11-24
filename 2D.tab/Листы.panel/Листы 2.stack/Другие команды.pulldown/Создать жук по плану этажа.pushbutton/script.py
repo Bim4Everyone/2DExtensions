@@ -318,7 +318,7 @@ class ExportWall2D(IExportContext2D):
         return None
 
 
-    def OnText(self):
+    def OnText(self, node):
         return None
 
 
