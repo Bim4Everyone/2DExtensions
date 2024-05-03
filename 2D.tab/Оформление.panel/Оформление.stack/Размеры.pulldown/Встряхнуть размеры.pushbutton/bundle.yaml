@@ -11,6 +11,7 @@ tooltip:
     to push Revit to regenerate the dimension and update the display.
 
 author: dosymep
+help_url: "https://wiki.a101.ru/pages/viewpage.action?pageId=9210875"
 
 min_revit_version: 2020
 max_revit_version: 2024
