@@ -5,12 +5,24 @@ title:
 tooltip:
   ru: >-
     Копирует виды и легенды, выбранные в диспетчере проекта.
-
     Листы и спецификации с помощью скрипта скопировать нельзя.
+    
+    
+    1. Выберите нужные виды (легенды) в диспетчере проекта.
+    
+    2. Запустите скрипт.
+    
+    3. В открывшемся окне задайте настройки копирования.
   en_us: >-
     Copies the views and legends selected in the Project Browser.
-
     Sheets and BOMs cannot be copied using a script.
+    
+    
+    1. Select views and legends.
+    
+    2. Run the script.
+    
+    3. Set settings in the window.
     
 assembly: RevitCopyViews.dll
 command_class: CopyViewCommand

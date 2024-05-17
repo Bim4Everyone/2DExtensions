@@ -8,15 +8,21 @@ tooltip:
     В целевом проекте должна быть создана как минимум одна легенда!
     
     
-    1. Запустите скрипт, выберите проект, в который хотите скопировать легенды.
+    1. Выберите легенды, которые требуется скопировать.
     
-    2. В открывшемся окне, выберите легенды для копирования.
+    2. Запустите скрипт.
+    
+    3. В открывшемся окне выберите проект, в который хотите скопировать легенды.
   en_us: >-
     Copies legends to another open project.
     At least one legend must be created in the target project!
 
-    1. Run the script, select the project you want to copy the legends to.
-    2. In the window that opens, select the legends to copy.
+
+    1. Select legends.
+    
+    2. Run the script.
+    
+    3. Select the project you want to copy the legends to.
 
 author: dosymep
 help_url: "https://wiki.a101.ru/pages/viewpage.action?pageId=9211075"

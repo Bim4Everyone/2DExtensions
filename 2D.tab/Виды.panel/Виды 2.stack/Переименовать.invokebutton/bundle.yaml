@@ -3,9 +3,24 @@ title:
   en_us: Rename
 
 tooltip:
-  ru: Переименовывает виды, легенды, спецификации или листы, выбранные в диспетчере проекта.
-  en_us: Renames views, legends, schedules, or sheets selected in the Project Browser.
-
+  ru: >- 
+    Переименовывает виды, легенды, спецификации или листы, выбранные в диспетчере проекта.
+    
+    
+    1. Выберите в диспетчере проекта необходимые виды (легенды, спецификации).
+    
+    2. Запустите скрипт.
+    
+    3. В открывшемся окне задайте настройки переименования.
+  en_us: >- 
+    Renames views, legends, schedules, or sheets selected in the Project Browser.
+    
+    
+    1. Select target views, schedules, sheets and legends.
+    
+    2. Run the script.
+    
+    3. Set settings in the window.
 
 assembly: RevitCopyViews.dll
 command_class: RenameViewCommand

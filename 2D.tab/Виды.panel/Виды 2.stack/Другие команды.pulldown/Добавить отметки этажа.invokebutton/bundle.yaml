@@ -3,8 +3,20 @@ title:
   en_us: Add level elevations
 
 tooltip:
-  ru: Добавляет отметки уровня к именам выделенных планов этажей.
-  en_us: Adds level marks to the names of selected floor plans.
+  ru: >- 
+    Для выделенных планов этажей добавляет отметки уровня в конец имени.
+    
+    
+    1. Выберите в диспетчере проекта необходимые виды в плане.
+    
+    2. Запустите скрипт.
+  en_us: >- 
+    Adds level marks to the names of selected floor plans.
+    
+    
+    1. Select view plans.
+    
+    2. Run the script.  
     
 assembly: RevitCopyViews.dll
 command_class: AddElevationCommand
