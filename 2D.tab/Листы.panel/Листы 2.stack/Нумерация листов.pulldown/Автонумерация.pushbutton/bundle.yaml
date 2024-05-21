@@ -8,13 +8,21 @@ tooltip:
     
     Нумерация начинается с 1.
     
-    В качестве префикса для номера берется значение параметра «ADSK_Комплект чертежей».
+    
+    В качестве префикса для номера берется значение параметра «ADSK_Комплект чертежей» 
+    (параметр платформы AlbumBlueprints).
+    
+    
+    1. Выберите в диспетчере проекта любой лист из альбома, который нужно перенумеровать.    
+    
+    2. Запустите скрипт.
   en_us: >-
     Renumbers all sheets in the album whose sheet is selected.
     
     Numbering starts from 1.
     
-    The value of the "ADSK_Set of drawings" parameter is taken as a prefix for the number.
+    
+    The value of the platform parameter "AlbumBlueprints" is taken as a prefix for the number.
 
 author: dosymep
 help_url: "https://wiki.a101.ru/pages/viewpage.action?pageId=9210917"

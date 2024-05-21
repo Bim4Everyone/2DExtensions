@@ -11,11 +11,11 @@ tooltip:
     
     2. В окне выберите эталонный лист. По расположению видов на эталонном листе будут выравниваться виды на остальных листах.
     
-    3. Выберите листы, на которых следует выровнять виды и запустите скрипт.
+    3. Выберите листы, на которых следует выровнять виды и нажмите "Выровнять".
   en_us: Aligns views on sheets.
 
 author: dosymep
-help_url: "https://wiki.a101.ru/pages/viewpage.action?pageId=9210917"
+help_url: "https://wiki.a101.ru/pages/viewpage.action?pageId=15827953"
 
 min_revit_version: 2020
 max_revit_version: 2024

@@ -3,8 +3,21 @@ title:
   en_us: Sheet Manager
 
 tooltip:
-  ru: Пока что может только создавать листы
-  en_us: Can only create sheets
+  ru: >-
+    СКРИПТ В РАЗРАБОТКЕ.
+
+    На данный момент скрипт может только создавать альбомы листов.
+    
+    
+    1. Запустите скрипт.
+    
+    2. Задайте количество листов, альбом.
+    
+    3. Нажмите "Создать листы".
+    
+    4. Задайте основные надписи для всех листов
+  en_us: >-
+    At this moment the script can only create sheet albums.
 
 assembly: RevitCreateViewSheet.dll
 command_class: CreateViewSheetCommand
