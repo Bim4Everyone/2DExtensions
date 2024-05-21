@@ -13,7 +13,15 @@ tooltip:
     2. Выделите оси и линию. 
     
     3. Запустите скрипт.
-  en_us: Axes
+  en_us: >-
+    Creates dimensions by axes.
+    
+    
+    1. Create a detail line as a dimension template. Dimensions will be placed instead of this line.
+    
+    2. Select axes and the line.
+    
+    3. Run the script.
 
 author: dosymep
 help_url: "https://wiki.a101.ru/pages/viewpage.action?pageId=9210875"
