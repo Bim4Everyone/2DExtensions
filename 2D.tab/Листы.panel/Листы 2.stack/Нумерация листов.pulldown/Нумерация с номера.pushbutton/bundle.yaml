@@ -5,12 +5,23 @@ title:
 tooltip:
   ru: >-
     Перенумеровывает выбранные листы, начиная с введенного номера.
+  
 
-    В качестве префикса для номера берется значение параметра «ADSK_Комплект чертежей».
+    В качестве префикса для номера берется значение параметра «ADSK_Комплект чертежей» 
+    (параметр платформы AlbumBlueprints).
+  
+  
+    1. Выберите в диспетчере проекта листы, которые нужно перенумеровать.
+    
+    2. Запустите скрипт.
+    
+    3. Задайте начальный номер.
+
   en_us: >-
     Renumbers the selected sheets starting from the entered number.
+    
 
-    The value of the "ADSK_Set of drawings" parameter is taken as a prefix for the number.
+    The value of the platform parameter "AlbumBlueprints" is taken as a prefix for the number.
 
 author: dosymep
 help_url: "https://wiki.a101.ru/pages/viewpage.action?pageId=9210917"

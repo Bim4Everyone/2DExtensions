@@ -3,7 +3,11 @@ title:
   en_us: Print
 
 tooltip:
-  ru: Сохраняет в PDF выбранные листы с автоматическим подбором размеров листа.
+  ru: >-
+    Сохраняет в PDF выбранные листы с автоматическим подбором размеров листа.
+    
+    
+    Для получения подробной инструкции по скрипту нажмите F1.
   en_us: Saves selected sheets to PDF with automatic sheet sizing.
 
 assembly: RevitBatchPrint.dll

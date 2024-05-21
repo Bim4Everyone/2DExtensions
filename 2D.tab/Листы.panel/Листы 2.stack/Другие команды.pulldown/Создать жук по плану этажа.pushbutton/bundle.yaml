@@ -4,12 +4,18 @@ title:
 
 tooltip:
   ru: >-
-    Создает легенду-жук на основе плана этажа.
+    Создает легенду-жук на основе плана этажа - на основе стен на плане создает линии на легенде.
+
+    Скрипт обрабатывает стены, у которых имя типоразмера начинается с "(Н)".
+
+    В проекте должна быть создана как минимум одна легенда!
 
 
-    1. Откройте нужный план этажа.
+    1. Откройте нужный план этажа и запустите скрипт
     
-    2. Запустите скрипт - все стены, начинающиеся с (Н) на плане этаже преобразуются в линии на легенде.
+    2. Задайте имя новой легенды и масштаб.
+    
+    3. Нажмите "ОК".
   en_us: >-
     Creates a legend based on the floor plan.
 
@@ -19,7 +25,7 @@ tooltip:
     2. Run the script - all walls starting with (H) on the floor plan are converted to lines on the legend.
 
 author: dosymep
-help_url: "https://wiki.a101.ru/pages/viewpage.action?pageId=9210917"
+help_url: "https://wiki.a101.ru/pages/viewpage.action?pageId=15827953"
 
 min_revit_version: 2020
 max_revit_version: 2024

@@ -9,8 +9,18 @@ tooltip:
     1. На виде необходимо построить линию детализации в том месте, где должна быть построена цепочка размеров. 
     Линия должна пересекать стены.
     
-    2. Выделить стены и линию. Запустить скрипт.
-  en_us: Walls
+    2. Выделите стены и линию.
+    
+    3. Запустите скрипт.
+  en_us: >-
+    Creates dimensions by walls.
+    
+    
+    1. Create a detail line as a dimension template. Dimensions will be placed instead of this line.
+    
+    2. Select walls and the line.
+    
+    3. Run the script.
 
 author: dosymep
 help_url: "https://wiki.a101.ru/pages/viewpage.action?pageId=9210875"

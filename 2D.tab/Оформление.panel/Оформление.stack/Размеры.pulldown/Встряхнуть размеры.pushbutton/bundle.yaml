@@ -6,6 +6,11 @@ tooltip:
   ru: >-
     Перемещает все размеры на выделенных видах вперед и назад на небольшую величину, 
     чтобы подтолкнуть Revit к повторному созданию размера и обновлению вида.
+    
+    
+    1. В диспетчере проекта выберите виды, на которые надо обновить размеры.
+    
+    2. Запустите скрипт.
   en_us: >-
     Moves all Dimensions on the selected views back-and-forth by a tiny amount 
     to push Revit to regenerate the dimension and update the display.

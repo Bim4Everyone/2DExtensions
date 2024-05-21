@@ -9,9 +9,9 @@ tooltip:
     
     1. Перед запуском скрипта надо открыть лист с легендами, которые надо скопировать.
     
-    2. После запуска скрипта в открывшемся окне надо выбрать листы, на которые будут скопированы (или обновлены) легенды.
+    2. В открывшемся окне выбрать листы, на которые будут скопированы (или обновлены) легенды.
     
-    3. Затем на листе надо выбрать нужные легенды и нажать «Готово» в левом верхнем углу.
+    3. На листе выбрать нужные легенды и нажать «Готово» в левом верхнем углу.
   en_us: >-
     Copies or updates sheet legends.
     
@@ -23,7 +23,7 @@ tooltip:
     3. Then on the sheet, select the desired legends and click "Finish" in the upper left corner.
 
 author: dosymep
-help_url: "https://wiki.a101.ru/pages/viewpage.action?pageId=9210917"
+help_url: "https://wiki.a101.ru/pages/viewpage.action?pageId=15827953"
 
 min_revit_version: 2020
 max_revit_version: 2024

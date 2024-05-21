@@ -4,13 +4,26 @@ title:
 
 tooltip:
   ru: >-
-    Создаёт виды для нового пользователя.
-
+    Создаёт набор видов для нового пользователя.
     Виды создаются через копирование видов, начинающихся с "User_".
+    
+    
+    1. Запустите скрипт.
+    
+    2. Заполните значения "Фамилия". 
+    Оно используется для группирования видов с помощью параметра "Группа видов".
+    
+    3. Заполните значение "Префикс".
   en_us: >-
     Creates views for a new user.
-
     Views are created by copying views starting with "User_".
+    
+    
+    1. Run the script.
+    
+    2. Write text for grouping window.    
+    
+    3. Write text for prefix.
 
 assembly: RevitCopyViews.dll
 command_class: CopyUserCommand

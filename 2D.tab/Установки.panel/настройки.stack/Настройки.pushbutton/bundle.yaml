@@ -3,8 +3,18 @@ title:
   en_us: Settings
 
 tooltip:
-  ru: Открывает окно настроек платформы.
-  en_us: Opens the platform settings window.
+  ru: >-
+    Открывает окно настроек платформы.
+    В окне настроек можно включить/отключить вкладки платформы и настроить параметры, используемые в платформе.
+    
+    
+    Для включения/отключения вкладок платформы в разделе "Расширения" нажмите или уберите соответствующую галочку.
+
+
+    Для получения информации о параметрах платформы перейдите в раздел "Параметры платформы".
+  en_us: >-
+    Opens the platform settings window.    
+    In this window you can turn on/off platform tabs and get information about platform parameters.
 
 author: dosymep
 context: zero-doc
