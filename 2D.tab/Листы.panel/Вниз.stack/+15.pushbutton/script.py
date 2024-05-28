@@ -11,8 +11,7 @@ from dosymep_libs.bim4everyone import *
 
 from pySpeech.ViewSheets import renumber
 
-
-@notification
+@notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     doc = __revit__.ActiveUIDocument.Document
