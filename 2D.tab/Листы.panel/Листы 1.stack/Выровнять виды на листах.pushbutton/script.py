@@ -19,6 +19,7 @@ from pyrevit import EXEC_PARAMS
 
 from dosymep_libs.bim4everyone import *
 from dosymep.Bim4Everyone.SharedParams import *
+from dosymep.Bim4Everyone.Templates import ProjectParameters
 
 
 ALIGN_POINT_TOP_LEFT = 'Верх-лево'
@@ -159,6 +160,8 @@ def script_execute(plugin_logger):
     active_view = doc.ActiveView
     if not isinstance(active_view, ViewSheet):
         forms.alert("Открытый вид не является листом.", exitscript=True)
+
+    ProjectParameters.Create(doc.Application).SetupRevitParam(doc, SharedParamsConfig.Instance.AlbumBlueprints)
 
     all_view_ports = FilteredElementCollector(doc).OfClass(Viewport)
     all_view_ports = [Option(x, doc) for x in all_view_ports]
