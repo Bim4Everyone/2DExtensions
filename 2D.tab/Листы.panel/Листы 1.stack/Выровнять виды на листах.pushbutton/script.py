@@ -21,6 +21,16 @@ from dosymep_libs.bim4everyone import *
 from dosymep.Bim4Everyone.SharedParams import *
 
 
+ALIGN_POINT_TOP_LEFT = 'Верх-лево'
+ALIGN_POINT_TOP = 'Верх'
+ALIGN_POINT_TOP_RIGHT = 'Верх-право'
+ALIGN_POINT_LEFT = 'Лево'
+ALIGN_POINT_CENTER = 'Центр'
+ALIGN_POINT_RIGHT = 'Право'
+ALIGN_POINT_BOTTOM_LEFT = 'Низ-лево'
+ALIGN_POINT_BOTTOM = 'Низ'
+ALIGN_POINT_BOTTOM_RIGHT = 'Низ-право'
+
 class Option(object):
     def __init__(self, obj, doc, state=False):
         self.state = state
@@ -52,7 +62,15 @@ class SelectPortViewForm(forms.TemplateUserInputWindow):
         self.View2align2.ItemsSource = View2align2
         self.View2align2.SelectedItem = View2align2[0]
 
-        alignment_points = ['Верх-право', 'Верх-лево', 'Центр', 'Низ-право', 'Низ-лево']
+        alignment_points = [ALIGN_POINT_TOP_LEFT,
+                            ALIGN_POINT_TOP,
+                            ALIGN_POINT_TOP_RIGHT,
+                            ALIGN_POINT_LEFT,
+                            ALIGN_POINT_CENTER,
+                            ALIGN_POINT_RIGHT,
+                            ALIGN_POINT_BOTTOM_LEFT,
+                            ALIGN_POINT_BOTTOM,
+                            ALIGN_POINT_BOTTOM_RIGHT]
         self.Height = 650
         for point in alignment_points:
             self.alignmentPoint.AddText(point)
@@ -141,16 +159,6 @@ class SelectPortViewForm(forms.TemplateUserInputWindow):
         self.Close()
 
 
-def GroupByParameter(lst, func):
-    res = {}
-    for el in lst:
-        key = func(el)
-        if key in res:
-            res[key].append(el)
-        else:
-            res[key] = [el]
-    return res
-
 
 @notification()
 @log_plugin(EXEC_PARAMS.command_name)
@@ -180,28 +188,28 @@ def script_execute(plugin_logger):
     with revit.Transaction("BIM: Выравнивание видов"):
         for port in ports_toalign:
             currentViewPort = port.obj
-            if alignmentPoint == 'Top':
+            if alignmentPoint == ALIGN_POINT_TOP:
                 d1 = primaryViewPort.GetBoxOutline().MaximumPoint.Y  # MinimumPoint
                 d2 = currentViewPort.GetBoxOutline().MaximumPoint.Y
                 delta = d1 - d2
                 newCenter = currentViewPort.GetBoxCenter().Add(delta)  # .Subtract(XYZ(delta_center,0,0))
                 currentViewPort.SetBoxCenter(newCenter)
 
-            elif alignmentPoint == 'Right':
+            elif alignmentPoint == ALIGN_POINT_RIGHT:
                 d1 = primaryViewPort.GetBoxOutline().MaximumPoint.X  # MinimumPoint
                 d2 = currentViewPort.GetBoxOutline().MaximumPoint.X
                 delta = d1 - d2
                 newCenter = currentViewPort.GetBoxCenter().Add(delta)  # .Subtract(XYZ(delta_center,0,0))
                 currentViewPort.SetBoxCenter(newCenter)
 
-            elif alignmentPoint == 'Top Right':
+            elif alignmentPoint == ALIGN_POINT_TOP_RIGHT:
                 d1 = primaryViewPort.GetBoxOutline().MaximumPoint  # MinimumPoint
                 d2 = currentViewPort.GetBoxOutline().MaximumPoint
                 delta = d1 - d2
                 newCenter = currentViewPort.GetBoxCenter().Add(delta)
                 currentViewPort.SetBoxCenter(newCenter)
 
-            elif alignmentPoint == 'Top Left':
+            elif alignmentPoint == ALIGN_POINT_TOP_LEFT:
                 p_Max = primaryViewPort.GetBoxOutline().MaximumPoint  # MinimumPoint
                 p_Min = primaryViewPort.GetBoxOutline().MinimumPoint
                 c_Max = currentViewPort.GetBoxOutline().MaximumPoint
@@ -214,28 +222,28 @@ def script_execute(plugin_logger):
                 newCenter = currentViewPort.GetBoxCenter().Add(delta).Subtract(XYZ(P_delta_X - C_delta_X, 0, 0))
                 currentViewPort.SetBoxCenter(newCenter)
 
-            elif alignmentPoint == 'Bottom':
+            elif alignmentPoint == ALIGN_POINT_BOTTOM:
                 P_Min = primaryViewPort.GetBoxOutline().MinimumPoint.Y  # MinimumPoint
                 c_Min = currentViewPort.GetBoxOutline().MinimumPoint.Y
                 delta = c_Min - P_Min
                 newCenter = currentViewPort.GetBoxCenter().Subtract(delta)
                 currentViewPort.SetBoxCenter(newCenter)
 
-            elif alignmentPoint == 'Left':
+            elif alignmentPoint == ALIGN_POINT_LEFT:
                 P_Min = primaryViewPort.GetBoxOutline().MinimumPoint.X  # MinimumPoint
                 c_Min = currentViewPort.GetBoxOutline().MinimumPoint.X
                 delta = c_Min - P_Min
                 newCenter = currentViewPort.GetBoxCenter().Subtract(delta)
                 currentViewPort.SetBoxCenter(newCenter)
 
-            elif alignmentPoint == 'Bottom Left':
+            elif alignmentPoint == ALIGN_POINT_BOTTOM_LEFT:
                 P_Min = primaryViewPort.GetBoxOutline().MinimumPoint  # MinimumPoint
                 c_Min = currentViewPort.GetBoxOutline().MinimumPoint
                 delta = c_Min - P_Min
                 newCenter = currentViewPort.GetBoxCenter().Subtract(delta)
                 currentViewPort.SetBoxCenter(newCenter)
 
-            elif alignmentPoint == 'Bottom Right':
+            elif alignmentPoint == ALIGN_POINT_BOTTOM_RIGHT:
                 p_Max = primaryViewPort.GetBoxOutline().MaximumPoint  # MinimumPoint
                 p_Min = primaryViewPort.GetBoxOutline().MinimumPoint  # MinimumPoint
                 c_Max = currentViewPort.GetBoxOutline().MaximumPoint
@@ -246,7 +254,7 @@ def script_execute(plugin_logger):
                 newCenter = currentViewPort.GetBoxCenter().Subtract(delta).Add(XYZ(P_delta_X - C_delta_X, 0, 0))
                 currentViewPort.SetBoxCenter(newCenter)
 
-            elif alignmentPoint == 'Center':
+            elif alignmentPoint == ALIGN_POINT_CENTER:
                 p_Center = primaryViewPort.GetBoxCenter()
                 c_Center = currentViewPort.GetBoxCenter()
                 delta = c_Center - p_Center
