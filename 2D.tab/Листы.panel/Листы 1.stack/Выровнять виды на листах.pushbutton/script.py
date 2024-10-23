@@ -164,8 +164,6 @@ class SelectPortViewForm(forms.TemplateUserInputWindow):
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     doc = __revit__.ActiveUIDocument.Document
-    uidoc = __revit__.ActiveUIDocument
-    app = __revit__.Application
 
     viewPorts = FilteredElementCollector(doc).OfClass(Viewport)
 
