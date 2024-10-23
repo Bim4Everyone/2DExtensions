@@ -151,20 +151,13 @@ def GroupByParameter(lst, func):
 @notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
-    ##########################################################################
-    # ---------------------------------MAIN-----------------------------------#
-    ##########################################################################
     doc = __revit__.ActiveUIDocument.Document
     uidoc = __revit__.ActiveUIDocument
     app = __revit__.Application
 
-    ##########################################################################
-    # -------------------------Ввод параметров--------------------------------#
-    ##########################################################################
     viewPorts = FilteredElementCollector(doc).OfClass(Viewport)
 
     ports = [Option(x) for x in viewPorts]  # ,x.priority x.number,
-    ports = [x for x in ports if x.number[0].isalpha()]  # ,x.priority x.number,
 
     sortedPorts = sorted(ports, key=lambda x: (x.str_number, x.priority))
     if len(sortedPorts) == 0:
