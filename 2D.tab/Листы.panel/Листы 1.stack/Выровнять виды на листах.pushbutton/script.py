@@ -164,16 +164,23 @@ class SelectPortViewForm(forms.TemplateUserInputWindow):
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     doc = __revit__.ActiveUIDocument.Document
+    active_view = doc.ActiveView
+    if not isinstance(active_view, ViewSheet):
+        forms.alert("Открытый вид не является листом.", exitscript=True)
 
-    viewPorts = FilteredElementCollector(doc).OfClass(Viewport)
+    all_view_ports = FilteredElementCollector(doc).OfClass(Viewport)
+    all_view_ports = [Option(x, doc) for x in all_view_ports]
+    all_view_ports = sorted(all_view_ports, key=lambda x: (x.sheet_album, x.str_number, x.priority))
 
-    ports = [Option(x, doc) for x in viewPorts]
+    active_view_view_port_ids = active_view.GetAllViewports()
+    active_view_view_ports = [doc.GetElement(x) for x in active_view_view_port_ids]
+    active_view_view_ports = [Option(x, doc) for x in active_view_view_ports]
+    active_view_view_ports = sorted(active_view_view_ports, key=lambda x: (x.str_number, x.priority))
 
-    sortedPorts = sorted(ports, key=lambda x: (x.sheet_album, x.str_number, x.priority))
-    if len(sortedPorts) == 0:
-        forms.alert("Выберите видовые экраны.", exitscript=True)
+    if len(active_view_view_ports) == 0:
+        forms.alert("В проекте отсутствуют листы с размещенными видовыми экранами.", exitscript=True)
 
-    res = SelectPortViewForm.show(sortedPorts, title='Выравнивание видов', View2align2=sortedPorts)
+    res = SelectPortViewForm.show(all_view_ports, title='Выравнивание видов', View2align2=active_view_view_ports)
     if res:
         ports_toalign = [x for x in res['ports_toalign']]
         port_toalignto = res['port_toalignto']
