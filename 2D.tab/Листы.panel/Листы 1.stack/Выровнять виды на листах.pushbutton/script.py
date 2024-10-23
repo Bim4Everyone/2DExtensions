@@ -18,10 +18,11 @@ from pyrevit import script
 from pyrevit import EXEC_PARAMS
 
 from dosymep_libs.bim4everyone import *
+from dosymep.Bim4Everyone.SharedParams import *
 
 
 class Option(object):
-    def __init__(self, obj, state=False):
+    def __init__(self, obj, doc, state=False):
         self.state = state
         self.name = obj.GetParamValueOrDefault(BuiltInParameter.VIEW_NAME)
         self.number = obj.GetParamValueOrDefault(BuiltInParameter.VIEWPORT_SHEET_NUMBER)
@@ -31,11 +32,14 @@ class Option(object):
         num = [int(x) for x in re.findall(r'\d+', self.number)]
         self.priority = num[0] if len(num) > 0 else 1000
 
-        def __nonzero__(self):
-            return self.state
+        sheet = doc.GetElement(obj.OwnerViewId)
+        self.sheet_album = sheet.GetParamValueOrDefault(SharedParamsConfig.Instance.AlbumBlueprints)
 
-        def __str__(self):
-            return self.name
+    def __nonzero__(self):
+        return self.state
+
+    def __str__(self):
+        return self.name
 
 
 class SelectPortViewForm(forms.TemplateUserInputWindow):
@@ -157,9 +161,9 @@ def script_execute(plugin_logger):
 
     viewPorts = FilteredElementCollector(doc).OfClass(Viewport)
 
-    ports = [Option(x) for x in viewPorts]  # ,x.priority x.number,
+    ports = [Option(x, doc) for x in viewPorts]
 
-    sortedPorts = sorted(ports, key=lambda x: (x.str_number, x.priority))
+    sortedPorts = sorted(ports, key=lambda x: (x.sheet_album, x.str_number, x.priority))
     if len(sortedPorts) == 0:
         forms.alert("Выберите видовые экраны.", exitscript=True)
 
