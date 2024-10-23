@@ -52,7 +52,7 @@ class SelectPortViewForm(forms.TemplateUserInputWindow):
         self.View2align2.ItemsSource = View2align2
         self.View2align2.SelectedItem = View2align2[0]
 
-        alignment_points = ['Top Right', 'Top Left', 'Center', 'Bottom Right', 'Bottom Left']
+        alignment_points = ['Верх-право', 'Верх-лево', 'Центр', 'Низ-право', 'Низ-лево']
         self.Height = 650
         for point in alignment_points:
             self.alignmentPoint.AddText(point)
@@ -79,8 +79,8 @@ class SelectPortViewForm(forms.TemplateUserInputWindow):
                 [checkbox for checkbox in self._context
                  if checkbox_filter in checkbox.name.lower()]
         else:
-            self.checkall_b.Content = 'Выделить все'
-            self.uncheckall_b.Content = 'Сбросить выделение'
+            self.checkall_b.Content = 'Выбрать все'
+            self.uncheckall_b.Content = 'Снять выбор'
             self.toggleall_b.Content = 'Инвертировать'
             self.Views2align.ItemsSource = self._context
 
