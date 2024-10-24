@@ -4,8 +4,7 @@
     ShowInTaskbar="False"
     WindowStartupLocation="CenterScreen"
     HorizontalContentAlignment="Center"
-    MinHeight="700" MinWidth="750"
-    MaxHeight="900" MaxWidth="1000">
+    MinHeight="700" MinWidth="750">
 
     <Window.Resources>
         <Style x:Key="ClearButton" TargetType="Button">
