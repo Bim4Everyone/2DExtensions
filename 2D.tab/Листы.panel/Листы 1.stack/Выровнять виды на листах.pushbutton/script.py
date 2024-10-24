@@ -18,10 +18,18 @@ from pyrevit import script
 from pyrevit import EXEC_PARAMS
 
 from dosymep_libs.bim4everyone import *
+from dosymep.Bim4Everyone.SharedParams import *
+from dosymep.Bim4Everyone.Templates import ProjectParameters
 
+
+ALIGN_POINT_TOP_LEFT = 'Верх-лево'
+ALIGN_POINT_TOP_RIGHT = 'Верх-право'
+ALIGN_POINT_CENTER = 'Центр'
+ALIGN_POINT_BOTTOM_LEFT = 'Низ-лево'
+ALIGN_POINT_BOTTOM_RIGHT = 'Низ-право'
 
 class Option(object):
-    def __init__(self, obj, state=False):
+    def __init__(self, obj, doc, state=False):
         self.state = state
         self.name = obj.GetParamValueOrDefault(BuiltInParameter.VIEW_NAME)
         self.number = obj.GetParamValueOrDefault(BuiltInParameter.VIEWPORT_SHEET_NUMBER)
@@ -31,11 +39,14 @@ class Option(object):
         num = [int(x) for x in re.findall(r'\d+', self.number)]
         self.priority = num[0] if len(num) > 0 else 1000
 
-        def __nonzero__(self):
-            return self.state
+        sheet = doc.GetElement(obj.OwnerViewId)
+        self.sheet_album = sheet.GetParamValueOrDefault(SharedParamsConfig.Instance.AlbumBlueprints)
 
-        def __str__(self):
-            return self.name
+    def __nonzero__(self):
+        return self.state
+
+    def __str__(self):
+        return self.name
 
 
 class SelectPortViewForm(forms.TemplateUserInputWindow):
@@ -48,7 +59,11 @@ class SelectPortViewForm(forms.TemplateUserInputWindow):
         self.View2align2.ItemsSource = View2align2
         self.View2align2.SelectedItem = View2align2[0]
 
-        alignment_points = ['Top Right', 'Top Left', 'Center', 'Bottom Right', 'Bottom Left']
+        alignment_points = [ALIGN_POINT_TOP_LEFT,
+                            ALIGN_POINT_TOP_RIGHT,
+                            ALIGN_POINT_CENTER,
+                            ALIGN_POINT_BOTTOM_LEFT,
+                            ALIGN_POINT_BOTTOM_RIGHT]
         self.Height = 650
         for point in alignment_points:
             self.alignmentPoint.AddText(point)
@@ -75,8 +90,8 @@ class SelectPortViewForm(forms.TemplateUserInputWindow):
                 [checkbox for checkbox in self._context
                  if checkbox_filter in checkbox.name.lower()]
         else:
-            self.checkall_b.Content = 'Выделить все'
-            self.uncheckall_b.Content = 'Сбросить выделение'
+            self.checkall_b.Content = 'Выбрать все'
+            self.uncheckall_b.Content = 'Снять выбор'
             self.toggleall_b.Content = 'Инвертировать'
             self.Views2align.ItemsSource = self._context
 
@@ -137,40 +152,30 @@ class SelectPortViewForm(forms.TemplateUserInputWindow):
         self.Close()
 
 
-def GroupByParameter(lst, func):
-    res = {}
-    for el in lst:
-        key = func(el)
-        if key in res:
-            res[key].append(el)
-        else:
-            res[key] = [el]
-    return res
-
 
 @notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
-    ##########################################################################
-    # ---------------------------------MAIN-----------------------------------#
-    ##########################################################################
     doc = __revit__.ActiveUIDocument.Document
-    uidoc = __revit__.ActiveUIDocument
-    app = __revit__.Application
+    active_view = doc.ActiveView
+    if not isinstance(active_view, ViewSheet):
+        forms.alert("Открытый вид не является листом.", exitscript=True)
 
-    ##########################################################################
-    # -------------------------Ввод параметров--------------------------------#
-    ##########################################################################
-    viewPorts = FilteredElementCollector(doc).OfClass(Viewport)
+    ProjectParameters.Create(doc.Application).SetupRevitParam(doc, SharedParamsConfig.Instance.AlbumBlueprints)
 
-    ports = [Option(x) for x in viewPorts]  # ,x.priority x.number,
-    ports = [x for x in ports if x.number[0].isalpha()]  # ,x.priority x.number,
+    all_view_ports = FilteredElementCollector(doc).OfClass(Viewport)
+    all_view_ports = [Option(x, doc) for x in all_view_ports]
+    all_view_ports = sorted(all_view_ports, key=lambda x: (x.sheet_album, x.str_number, x.priority))
 
-    sortedPorts = sorted(ports, key=lambda x: (x.str_number, x.priority))
-    if len(sortedPorts) == 0:
-        forms.alert("Выберите видовые экраны.", exitscript=True)
+    active_view_view_port_ids = active_view.GetAllViewports()
+    active_view_view_ports = [doc.GetElement(x) for x in active_view_view_port_ids]
+    active_view_view_ports = [Option(x, doc) for x in active_view_view_ports]
+    active_view_view_ports = sorted(active_view_view_ports, key=lambda x: (x.str_number, x.priority))
 
-    res = SelectPortViewForm.show(sortedPorts, title='Выравнивание видов', View2align2=sortedPorts)
+    if len(active_view_view_ports) == 0:
+        forms.alert("В проекте отсутствуют листы с размещенными видовыми экранами.", exitscript=True)
+
+    res = SelectPortViewForm.show(all_view_ports, title='Выравнивание видов', View2align2=active_view_view_ports)
     if res:
         ports_toalign = [x for x in res['ports_toalign']]
         port_toalignto = res['port_toalignto']
@@ -183,28 +188,14 @@ def script_execute(plugin_logger):
     with revit.Transaction("BIM: Выравнивание видов"):
         for port in ports_toalign:
             currentViewPort = port.obj
-            if alignmentPoint == 'Top':
-                d1 = primaryViewPort.GetBoxOutline().MaximumPoint.Y  # MinimumPoint
-                d2 = currentViewPort.GetBoxOutline().MaximumPoint.Y
-                delta = d1 - d2
-                newCenter = currentViewPort.GetBoxCenter().Add(delta)  # .Subtract(XYZ(delta_center,0,0))
-                currentViewPort.SetBoxCenter(newCenter)
-
-            elif alignmentPoint == 'Right':
-                d1 = primaryViewPort.GetBoxOutline().MaximumPoint.X  # MinimumPoint
-                d2 = currentViewPort.GetBoxOutline().MaximumPoint.X
-                delta = d1 - d2
-                newCenter = currentViewPort.GetBoxCenter().Add(delta)  # .Subtract(XYZ(delta_center,0,0))
-                currentViewPort.SetBoxCenter(newCenter)
-
-            elif alignmentPoint == 'Top Right':
+            if alignmentPoint == ALIGN_POINT_TOP_RIGHT:
                 d1 = primaryViewPort.GetBoxOutline().MaximumPoint  # MinimumPoint
                 d2 = currentViewPort.GetBoxOutline().MaximumPoint
                 delta = d1 - d2
                 newCenter = currentViewPort.GetBoxCenter().Add(delta)
                 currentViewPort.SetBoxCenter(newCenter)
 
-            elif alignmentPoint == 'Top Left':
+            elif alignmentPoint == ALIGN_POINT_TOP_LEFT:
                 p_Max = primaryViewPort.GetBoxOutline().MaximumPoint  # MinimumPoint
                 p_Min = primaryViewPort.GetBoxOutline().MinimumPoint
                 c_Max = currentViewPort.GetBoxOutline().MaximumPoint
@@ -217,28 +208,14 @@ def script_execute(plugin_logger):
                 newCenter = currentViewPort.GetBoxCenter().Add(delta).Subtract(XYZ(P_delta_X - C_delta_X, 0, 0))
                 currentViewPort.SetBoxCenter(newCenter)
 
-            elif alignmentPoint == 'Bottom':
-                P_Min = primaryViewPort.GetBoxOutline().MinimumPoint.Y  # MinimumPoint
-                c_Min = currentViewPort.GetBoxOutline().MinimumPoint.Y
-                delta = c_Min - P_Min
-                newCenter = currentViewPort.GetBoxCenter().Subtract(delta)
-                currentViewPort.SetBoxCenter(newCenter)
-
-            elif alignmentPoint == 'Left':
-                P_Min = primaryViewPort.GetBoxOutline().MinimumPoint.X  # MinimumPoint
-                c_Min = currentViewPort.GetBoxOutline().MinimumPoint.X
-                delta = c_Min - P_Min
-                newCenter = currentViewPort.GetBoxCenter().Subtract(delta)
-                currentViewPort.SetBoxCenter(newCenter)
-
-            elif alignmentPoint == 'Bottom Left':
+            elif alignmentPoint == ALIGN_POINT_BOTTOM_LEFT:
                 P_Min = primaryViewPort.GetBoxOutline().MinimumPoint  # MinimumPoint
                 c_Min = currentViewPort.GetBoxOutline().MinimumPoint
                 delta = c_Min - P_Min
                 newCenter = currentViewPort.GetBoxCenter().Subtract(delta)
                 currentViewPort.SetBoxCenter(newCenter)
 
-            elif alignmentPoint == 'Bottom Right':
+            elif alignmentPoint == ALIGN_POINT_BOTTOM_RIGHT:
                 p_Max = primaryViewPort.GetBoxOutline().MaximumPoint  # MinimumPoint
                 p_Min = primaryViewPort.GetBoxOutline().MinimumPoint  # MinimumPoint
                 c_Max = currentViewPort.GetBoxOutline().MaximumPoint
@@ -249,7 +226,7 @@ def script_execute(plugin_logger):
                 newCenter = currentViewPort.GetBoxCenter().Subtract(delta).Add(XYZ(P_delta_X - C_delta_X, 0, 0))
                 currentViewPort.SetBoxCenter(newCenter)
 
-            elif alignmentPoint == 'Center':
+            elif alignmentPoint == ALIGN_POINT_CENTER:
                 p_Center = primaryViewPort.GetBoxCenter()
                 c_Center = currentViewPort.GetBoxCenter()
                 delta = c_Center - p_Center

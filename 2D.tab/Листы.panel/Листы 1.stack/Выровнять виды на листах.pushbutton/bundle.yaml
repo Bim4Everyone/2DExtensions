@@ -4,24 +4,28 @@ title:
 
 tooltip:
   ru: >-
-    Выравнивает виды на листах.
+    Выравнивает виды на листах на основе выбранного вида.
     
     
-    1. Запустите скрипт.
+    1. Откройте лист с видом, по которому должны быть выровнены остальные виды и запустите скрипт.
     
-    2. В окне выберите эталонный лист. По расположению видов на эталонном листе будут 
+    2. В окне скрипта выберите эталонный видовой экран. По расположению этого вида будут 
     выравниваться виды на остальных листах.
     
-    3. Выберите листы, на которых следует выровнять виды и нажмите "Выровнять".
+    3. Выберите видовые экраны, на которых следует выровнять виды.
+    
+    4. Выберите точку для выравнивания и нажмите "Выровнять"
   en_us: >- 
     Aligns views on sheets.
     
     
-    1. Run the script.
+    1. Open a sheet with a reference view and run the script.
     
-    2. Select a reference sheet. Views from this sheet will be used for aligning.
+    2. Select a reference view port in the script view. Selected view will be used for aligning.
     
-    3. Select sheets that contain views that should be aligned. Press "Align" button.
+    3. Select view ports that contain views that should be aligned. 
+    
+    4. Select alignment point and press "Align" button.
 
 author: dosymep
 help_url: "https://kb.a101.ru/pages/viewpage.action?pageId=134086773"
