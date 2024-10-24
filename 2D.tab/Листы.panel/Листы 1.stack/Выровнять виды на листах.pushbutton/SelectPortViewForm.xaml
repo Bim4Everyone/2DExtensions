@@ -60,7 +60,7 @@
                                 <CheckBox
                                     IsChecked="{Binding state}"
                                     Checked="check_selected"
-							        Unchecked="uncheck_selected"/>
+                                    Unchecked="uncheck_selected"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
@@ -120,6 +120,6 @@
             Margin="10"
             x:Name="select_b"
             Content="Выровнять"
-			Click="button_select"/>
+            Click="button_select"/>
     </Grid>
 </Window>
