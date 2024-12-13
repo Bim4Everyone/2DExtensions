@@ -119,9 +119,9 @@ class RevitRepository:
         loops_list = [i.GetEdgesAsCurveLoops() for i in bottom_faces]
         return [loop for loop_list in loops_list for loop in loop_list]
 
-    def delete_elements(self, ids):
-        with revit.Transaction('BIM: Удаление старых штриховок'):
-            self.__doc.Delete(ids)
+    def delete_element(self, elem_id):
+        with revit.Transaction('BIM: Удаление старой штриховки'):
+            self.__doc.Delete(elem_id)
 
 
 @notification()
@@ -132,7 +132,7 @@ def script_execute(plugin_logger):
     cutting_regions = repo.pick_regions(main_region) # type: list
     loops = repo.cut_regions(main_region, cutting_regions)
     repo.create_region(main_region.GetTypeId(), main_region.OwnerViewId, loops)
-    repo.delete_elements(main_region.Id)
+    repo.delete_element(main_region.Id)
 
 
 script_execute()
