@@ -1,0 +1,28 @@
+title:
+  ru: Объединить штриховки
+  en_us: Merge regions
+
+tooltip:
+  ru: >- 
+    Объединяет штриховки
+    
+    
+    1. Запустить плагин и выберите первую штриховку.
+    
+    2. Выбрать остальные штриховки для объединения.
+    
+    3. Нажать "Готово".
+  en_us: >-
+    Merge regions
+    
+    
+    1. Run script and pick first region.
+    
+    2. Pick other regions to merge.
+    
+    3. Press "Finish".
+
+author: vlastroG
+
+min_revit_version: 2022
+max_revit_version: 2024
