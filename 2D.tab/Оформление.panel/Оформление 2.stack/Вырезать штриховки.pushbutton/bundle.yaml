@@ -5,8 +5,22 @@ title:
 tooltip:
   ru: >- 
     Вырезает штриховки
+    
+    
+    1. Запустить плагин и выбрать первую штриховку, из которой будут вырезаться остальные.
+    
+    2. Выбрать штриховки, которые будут вырезать первую.
+    
+    3. Нажать "Готово".
   en_us: >-
     Cut regions
+    
+    
+    1. Run script and pick first region to cut.
+    
+    2. Pick regions to cut first region.
+    
+    3. Press "Finish".
 
 author: vlastroG
 
