@@ -67,49 +67,40 @@ class RevitRepository:
         main_z = self.get_z(main_region.GetBoundaries()[0])
         cut_solids = []
         for region in cutting_regions:
-            boundaries = region.GetBoundaries()
-            for loop in boundaries:
-                z_diff = self.get_z(loop) - main_z
-                transform = Transform.CreateTranslation(XYZ(0,0,-z_diff))
-                loop_transformed = CurveLoop.CreateViaTransform(loop, transform)
-                solid = GeometryCreationUtilities.CreateExtrusionGeometry(
-                    [loop_transformed],
-                    direction,
-                    distance)
-                cut_solids.append(solid)
-        main_solids = []
-        for loop in main_region.GetBoundaries():
-            main_solids.append(GeometryCreationUtilities.CreateExtrusionGeometry(
-                [loop],
+            loops = region.GetBoundaries()
+            z_diff = self.get_z(loops[0]) - main_z
+            transform = Transform.CreateTranslation(XYZ(0, 0, -z_diff))
+            solid = GeometryCreationUtilities.CreateExtrusionGeometry(
+                loops,
                 direction,
-                distance))
-        return main_solids, cut_solids
+                distance)
+            solid = SolidUtils.CreateTransformed(solid, transform)
+            cut_solids.append(solid)
+        cut_solids = self.unite_solids(cut_solids)
+        main_solid = GeometryCreationUtilities.CreateExtrusionGeometry(
+                main_region.GetBoundaries(),
+                direction,
+                distance)
+        return main_solid, cut_solids
 
     @staticmethod
     def get_z(curve_loop):
         return list(curve_loop)[0].GetEndPoint(0).Z
 
     def cut_regions(self, main_region, cutting_regions):
-        main_solids, cutting_solids = self.get_solids(main_region, cutting_regions)
-        result_solids = self.cut_solids(main_solids, cutting_solids)
-        print(len(result_solids))
+        main_solid, cutting_solids = self.get_solids(main_region, cutting_regions)
+        result_solids = self.cut_solids(main_solid, cutting_solids)
         result_solids = self.unite_solids(result_solids)
-        print(len(result_solids))
-
         return self.get_bottom_loops(result_solids)
 
-    @staticmethod
-    def cut_solids(first_solids, second_solids):
-        result_solids = []
-        for first_solid in first_solids:
-            result_solid = first_solid
-            for second_solid in second_solids:
-                result_solid = BooleanOperationsUtils.ExecuteBooleanOperation(
-                    result_solid,
-                    second_solid,
-                    BooleanOperationsType.Difference)
-            result_solids.append(result_solid)
-        return result_solids
+    def cut_solids(self, first_solid, second_solids):
+        result = first_solid
+        for solid in second_solids:
+            result = BooleanOperationsUtils.ExecuteBooleanOperation(
+                result,
+                solid,
+                BooleanOperationsType.Difference)
+        return self.unite_solids([result])
 
     @staticmethod
     def unite_solids(solids):
