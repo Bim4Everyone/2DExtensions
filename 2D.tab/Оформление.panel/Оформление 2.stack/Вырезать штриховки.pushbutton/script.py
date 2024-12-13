@@ -22,6 +22,7 @@ from pyrevit import EXEC_PARAMS
 
 
 from dosymep_libs.bim4everyone import *
+from dosymep.Revit.Geometry import *
 
 
 class CutRegionSelectionFilter(ISelectionFilter):
@@ -42,33 +43,33 @@ class MainRegionSelectionFilter(ISelectionFilter):
     def AllowReference(self, ref, point):
         return False
 
+
 class RevitRepository:
     def __init__(self):
-        self.__doc = HOST_APP.doc
+        self.__doc = HOST_APP.doc # type: Document
         self.__uidoc = HOST_APP.uidoc
 
-    def select_region(self):
+    def pick_region(self):
         with forms.WarningBar(title='Выберите основную штриховку'):
             reference = self.__uidoc.Selection.PickObject(ObjectType.Element, MainRegionSelectionFilter())
             return self.__doc.GetElement(reference)
 
-    def select_regions(self, main_region):
+    def pick_regions(self, main_region):
         with forms.WarningBar(title='Выберите штриховки для вырезания'):
             references = self.__uidoc.Selection.PickObjects(
                 ObjectType.Element,
                 CutRegionSelectionFilter(main_region.Id))
             return [self.__doc.GetElement(ref) for ref in references]
 
-    @staticmethod
-    def get_solids(main_region, cutting_regions):
+    def get_solids(self, main_region, cutting_regions):
         direction = XYZ.BasisZ
         distance = 1
-        main_z = list(main_region.GetBoundaries()[0])[0].GetEndPoint(0).Z
+        main_z = self.get_z(main_region.GetBoundaries()[0])
         cut_solids = []
         for region in cutting_regions:
             boundaries = region.GetBoundaries()
             for loop in boundaries:
-                z_diff = list(loop)[0].GetEndPoint(0).Z - main_z
+                z_diff = self.get_z(loop) - main_z
                 transform = Transform.CreateTranslation(XYZ(0,0,-z_diff))
                 loop_transformed = CurveLoop.CreateViaTransform(loop, transform)
                 solid = GeometryCreationUtilities.CreateExtrusionGeometry(
@@ -84,25 +85,42 @@ class RevitRepository:
                 distance))
         return main_solids, cut_solids
 
+    @staticmethod
+    def get_z(curve_loop):
+        return list(curve_loop)[0].GetEndPoint(0).Z
+
     def cut_regions(self, main_region, cutting_regions):
         main_solids, cutting_solids = self.get_solids(main_region, cutting_regions)
+        result_solids = self.cut_solids(main_solids, cutting_solids)
+        print(len(result_solids))
+        result_solids = self.unite_solids(result_solids)
+        print(len(result_solids))
+
+        return self.get_bottom_loops(result_solids)
+
+    @staticmethod
+    def cut_solids(first_solids, second_solids):
         result_solids = []
-        for main_solid in main_solids:
-            result_solid = main_solid
-            for cutting_solid in cutting_solids:
+        for first_solid in first_solids:
+            result_solid = first_solid
+            for second_solid in second_solids:
                 result_solid = BooleanOperationsUtils.ExecuteBooleanOperation(
                     result_solid,
-                    cutting_solid,
+                    second_solid,
                     BooleanOperationsType.Difference)
             result_solids.append(result_solid)
-        return self.get_curve_loops(result_solids)
+        return result_solids
+
+    @staticmethod
+    def unite_solids(solids):
+        return SolidExtensions.CreateUnitedSolids(solids)
 
     def create_region(self, type_id, view_id, loops):
-        with revit.Transaction('Вырезание штриховки'):
+        with revit.Transaction('BIM: Вырезание штриховки'):
             FilledRegion.Create(self.__doc, type_id, view_id, loops)
 
     @staticmethod
-    def get_curve_loops(solids):
+    def get_bottom_loops(solids):
         result_solids = [i for i in solids if i is not None and i.Volume > 0]
         faces_lists = [list(solid.Faces) for solid in result_solids]
         faces = [face for face_list in faces_lists for face in face_list]
@@ -110,14 +128,20 @@ class RevitRepository:
         loops_list = [i.GetEdgesAsCurveLoops() for i in bottom_faces]
         return [loop for loop_list in loops_list for loop in loop_list]
 
+    def delete_elements(self, ids):
+        with revit.Transaction('BIM: Удаление старых штриховок'):
+            self.__doc.Delete(ids)
+
+
 @notification()
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     repo = RevitRepository()
-    main_region = repo.select_region() # type: FilledRegion
-    cutting_regions = repo.select_regions(main_region) # type: list
+    main_region = repo.pick_region() # type: FilledRegion
+    cutting_regions = repo.pick_regions(main_region) # type: list
     loops = repo.cut_regions(main_region, cutting_regions)
     repo.create_region(main_region.GetTypeId(), main_region.OwnerViewId, loops)
+    repo.delete_elements(main_region.Id)
 
 
 script_execute()
