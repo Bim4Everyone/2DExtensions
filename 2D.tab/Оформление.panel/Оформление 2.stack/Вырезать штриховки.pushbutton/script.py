@@ -1,5 +1,5 @@
 # coding=utf-8
-
+import Autodesk.Revit.Exceptions
 import clr
 
 clr.AddReference("dosymep.Revit.dll")
@@ -58,7 +58,11 @@ def script_execute(plugin_logger):
     if not cutting_regions:
         raise System.OperationCanceledException()
     loops = repo.get_loops(main_region, cutting_regions)
-    regions.create_region(main_region.GetTypeId(), main_region.OwnerViewId, loops, "BIM: Создание штриховки")
+    try:
+        regions.create_region(main_region.GetTypeId(), main_region.OwnerViewId, loops, "BIM: Создание штриховки")
+    except Autodesk.Revit.Exceptions.ApplicationException:
+        script.output.get_output().close()
+        forms.alert("Нельзя вырезать штриховки. Скорее всего из-за самопересекающихся контуров.", exitscript=True)
     regions.delete_element(main_region.Id, "BIM: Удаление старой штриховки")
 
 

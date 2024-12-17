@@ -49,7 +49,11 @@ def script_execute(plugin_logger):
     if not other_regions:
         raise System.OperationCanceledException()
     loops = repo.merge_regions(main_region, other_regions)
-    regions.create_region(main_region.GetTypeId(), main_region.OwnerViewId, loops, "BIM: Создание штриховки")
+    try:
+        regions.create_region(main_region.GetTypeId(), main_region.OwnerViewId, loops, "BIM: Создание штриховки")
+    except Autodesk.Revit.Exceptions.ApplicationException:
+        script.output.get_output().close()
+        forms.alert("Нельзя объединить штриховки. Скорее всего из-за самопересекающихся контуров", exitscript=True)
     ids = [i.Id for i in other_regions]
     ids.append(main_region.Id)
     regions.delete_elements(ids, "BIM: Удаление старых штриховок")
