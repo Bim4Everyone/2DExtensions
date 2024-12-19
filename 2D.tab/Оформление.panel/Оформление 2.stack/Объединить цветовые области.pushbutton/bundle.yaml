@@ -1,0 +1,28 @@
+title:
+  ru: Объединить цветовые области
+  en_us: Merge filled regions
+
+tooltip:
+  ru: >- 
+    Объединяет цветовые области друг с другом
+    
+    
+    1. Запустить плагин и выбрать первую цветовую область, стиль которой будет применен к итоговой цветовой области.
+    
+    2. Выбрать остальные цветовые области для объединения.
+    
+    3. Нажать "Готово".
+  en_us: >-
+    Merge filled regions with each other
+    
+    
+    1. Run script and pick the first filled region. Result region will have style of the first filled region.
+    
+    2. Pick other filled regions to merge.
+    
+    3. Press "Finish".
+
+author: vlastroG
+
+min_revit_version: 2022
+max_revit_version: 2024

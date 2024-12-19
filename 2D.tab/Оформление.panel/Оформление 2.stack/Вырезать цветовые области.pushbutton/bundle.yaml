@@ -1,0 +1,29 @@
+title:
+  ru: Вырезать цветовые области
+  en_us: Cut filled regions
+
+tooltip:
+  ru: >- 
+    Вырезает цветовые области друг из друга
+    
+    
+    1. Запустить плагин и выбрать первую цветовую область, из которой будут вырезаться остальные 
+    и стиль которой будет применен к итоговой цветовой области.
+    
+    2. Выбрать цветовые области, которые будут вырезать первую.
+    
+    3. Нажать "Готово".
+  en_us: >-
+    Cut filled regions with each other
+    
+    
+    1. Run script and pick the first filled region to cut. Result region will have style of the first filled region.
+    
+    2. Pick other filled regions to cut the first region.
+    
+    3. Press "Finish".
+
+author: vlastroG
+
+min_revit_version: 2022
+max_revit_version: 2024
