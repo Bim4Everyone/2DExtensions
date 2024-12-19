@@ -44,19 +44,23 @@ class RevitRepository:
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     repo = RevitRepository() # type: RevitRepository
-    main_region = regions.pick_region("Выберите основную штриховку") # type: FilledRegion
-    other_regions = regions.pick_regions(main_region, "Выберите штриховки для объединения") # type: list
+    main_region = regions.pick_region("Выберите основную цветовую область") # type: FilledRegion
+    other_regions = regions.pick_regions(main_region, "Выберите цветовые области для объединения") # type: list
     if not other_regions:
         raise System.OperationCanceledException()
     loops = repo.merge_regions(main_region, other_regions)
     try:
-        regions.create_region(main_region.GetTypeId(), main_region.OwnerViewId, loops, "BIM: Создание штриховки")
+        regions.create_region(main_region.GetTypeId(),
+                              main_region.OwnerViewId,
+                              loops,
+                              "BIM: Создание цветовой области")
     except Autodesk.Revit.Exceptions.ApplicationException:
         script.output.get_output().close()
-        forms.alert("Нельзя объединить штриховки. Скорее всего из-за самопересекающихся контуров", exitscript=True)
+        forms.alert("Нельзя объединить цветовые области. Скорее всего из-за самопересекающихся контуров",
+                    exitscript=True)
     ids = [i.Id for i in other_regions]
     ids.append(main_region.Id)
-    regions.delete_elements(ids, "BIM: Удаление старых штриховок")
+    regions.delete_elements(ids, "BIM: Удаление старых цветовых областей")
 
 
 script_execute()

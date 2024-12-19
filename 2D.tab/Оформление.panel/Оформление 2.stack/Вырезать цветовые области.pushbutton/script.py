@@ -53,17 +53,21 @@ class RevitRepository:
 @log_plugin(EXEC_PARAMS.command_name)
 def script_execute(plugin_logger):
     repo = RevitRepository()
-    main_region = regions.pick_region("Выберите основную штриховку") # type: FilledRegion
-    cutting_regions = regions.pick_regions(main_region, "Выберите штриховки для вырезания") # type: list
+    main_region = regions.pick_region("Выберите основную цветовую область") # type: FilledRegion
+    cutting_regions = regions.pick_regions(main_region, "Выберите цветовые области для вырезания") # type: list
     if not cutting_regions:
         raise System.OperationCanceledException()
     loops = repo.get_loops(main_region, cutting_regions)
     try:
-        regions.create_region(main_region.GetTypeId(), main_region.OwnerViewId, loops, "BIM: Создание штриховки")
+        regions.create_region(main_region.GetTypeId(),
+                              main_region.OwnerViewId,
+                              loops,
+                              "BIM: Создание цветовой области")
     except Autodesk.Revit.Exceptions.ApplicationException:
         script.output.get_output().close()
-        forms.alert("Нельзя вырезать штриховки. Скорее всего из-за самопересекающихся контуров.", exitscript=True)
-    regions.delete_element(main_region.Id, "BIM: Удаление старой штриховки")
+        forms.alert("Нельзя вырезать цветовые области. Скорее всего из-за самопересекающихся контуров.",
+                    exitscript=True)
+    regions.delete_element(main_region.Id, "BIM: Удаление старой цветовой области")
 
 
 script_execute()
