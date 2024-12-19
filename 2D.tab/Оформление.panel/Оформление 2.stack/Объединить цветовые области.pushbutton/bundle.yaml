@@ -4,7 +4,7 @@ title:
 
 tooltip:
   ru: >- 
-    Объединяет цветовые области
+    Объединяет цветовые области друг с другом
     
     
     1. Запустить плагин и выбрать первую цветовую область, стиль которой будет применен к итоговой цветовой области.
@@ -13,7 +13,7 @@ tooltip:
     
     3. Нажать "Готово".
   en_us: >-
-    Merge filled regions
+    Merge filled regions with each other
     
     
     1. Run script and pick the first filled region. Result region will have style of the first filled region.

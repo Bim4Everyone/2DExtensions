@@ -4,7 +4,7 @@ title:
 
 tooltip:
   ru: >- 
-    Вырезает цветовые области
+    Вырезает цветовые области друг из друга
     
     
     1. Запустить плагин и выбрать первую цветовую область, из которой будут вырезаться остальные 
@@ -14,7 +14,7 @@ tooltip:
     
     3. Нажать "Готово".
   en_us: >-
-    Cut filled regions
+    Cut filled regions with each other
     
     
     1. Run script and pick the first filled region to cut. Result region will have style of the first filled region.
