@@ -1,0 +1,36 @@
+title:
+  ru: Ведомость спецификаций
+  en_us: List of schedules
+
+tooltip:
+  ru: >- 
+    Плагин создает ведомость спецификаций, которые расположены на листах. Ведомость представляет собой "ведомость примечаний", которая отображает созданные плагином загружаемые семейства "Типовая аннотация".
+
+
+    1. Запустите плагин
+
+    2. В левой части окна отметьте связанные файлы, если на них расположены листы с нужными спецификациями
+
+    3. В правой части окна выделите листы, по которым нужно создать ведомость спецификаций
+
+    4. Нажмите кнопку "Создать"
+
+  en_us: >- 
+    The plugin creates a list of schedules that are located on sheets. The statement is a “note block” that displays the “Wiew Title” loadable families created by the plugin.
+
+
+    1. Launch the plugin
+
+    2. On the left side of the window, mark the links files if they contain sheets with the required schedules
+
+    3. In the right part of the window, select the sheets for which you want to create a list of schedules.
+
+    4. Click the "Create" button
+
+assembly: RevitListOfSchedules.dll
+command_class: RevitListOfSchedulesCommand
+
+author: KozlovPS
+
+min_revit_version: 2022
+max_revit_version: 2024
