@@ -34,6 +34,7 @@ filter_categories = List[BuiltInCategory]([BuiltInCategory.OST_Walls,
 elements = FilteredElementCollector(doc, view.Id) \
     .WherePasses(ElementMulticategoryFilter(filter_categories)) \
     .ToElements()
+elements = filter(lambda e: e.BoundingBox[view] is not None, elements)
 
 class Utils:
     def __init__(self):
