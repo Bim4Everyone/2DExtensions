@@ -53,7 +53,7 @@ project_params.SetupRevitParams(doc,
 def sort_fun(str):
     num = [int(x) for x in re.findall(r'\d+', str)]
     if len(num) > 0:
-        return num[0]
+        return num
     else:
         return 1000
 
